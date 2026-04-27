@@ -67,9 +67,9 @@ using namespace Qt::StringLiterals;
 namespace OCC
 {
 
-Q_LOGGING_CATEGORY(lcCse, "nextcloud.sync.clientsideencryption", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcCseDecryption, "nextcloud.sync.clientsideencryption.decryption", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcCseEncryption, "nextcloud.sync.clientsideencryption.encryption", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCse, "openlist.sync.clientsideencryption", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCseDecryption, "openlist.sync.clientsideencryption.decryption", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCseEncryption, "openlist.sync.clientsideencryption.encryption", QtInfoMsg)
 
 QString e2eeBaseUrl(const OCC::AccountPtr &account)
 {

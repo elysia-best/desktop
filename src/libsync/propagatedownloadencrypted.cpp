@@ -7,7 +7,7 @@
 #include "encryptedfoldermetadatahandler.h"
 #include "foldermetadata.h"
 
-Q_LOGGING_CATEGORY(lcPropagateDownloadEncrypted, "nextcloud.sync.propagator.download.encrypted", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateDownloadEncrypted, "openlist.sync.propagator.download.encrypted", QtInfoMsg)
 
 
 namespace OCC {

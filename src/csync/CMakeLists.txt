@@ -59,42 +59,42 @@ endif()
 
 configure_file(csync_version.h.in ${CMAKE_CURRENT_BINARY_DIR}/csync_version.h)
 
-add_library(nextcloud_csync SHARED ${common_SOURCES} ${csync_SRCS})
-add_library(Nextcloud::csync ALIAS nextcloud_csync)
+add_library(openlist_csync SHARED ${common_SOURCES} ${csync_SRCS})
+add_library(OpenList::csync ALIAS openlist_csync)
 
 target_include_directories(
-  nextcloud_csync
+  openlist_csync
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/std
 )
 
-generate_export_header(nextcloud_csync
+generate_export_header(openlist_csync
   EXPORT_MACRO_NAME OCSYNC_EXPORT
   EXPORT_FILE_NAME ocsynclib.h
 )
 
-target_link_libraries(nextcloud_csync
+target_link_libraries(openlist_csync
   PUBLIC
   ${CSYNC_REQUIRED_LIBRARIES}
   Qt::Core Qt::Concurrent
 )
 
 if(ZLIB_FOUND)
-  target_link_libraries(nextcloud_csync PUBLIC ZLIB::ZLIB)
+  target_link_libraries(openlist_csync PUBLIC ZLIB::ZLIB)
 endif(ZLIB_FOUND)
 
-target_link_libraries(nextcloud_csync PRIVATE SQLite::SQLite3)
+target_link_libraries(openlist_csync PRIVATE SQLite::SQLite3)
 
 # For src/common/utility_mac.cpp
 if (APPLE)
     find_library(FOUNDATION_LIBRARY NAMES Foundation)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(SERVICEMANAGEMENT_LIBRARY NAMES ServiceManagement)
-    target_link_libraries(nextcloud_csync PUBLIC ${FOUNDATION_LIBRARY} ${CORESERVICES_LIBRARY})
-    target_link_libraries(nextcloud_csync PRIVATE ${SERVICEMANAGEMENT_LIBRARY})
+    target_link_libraries(openlist_csync PUBLIC ${FOUNDATION_LIBRARY} ${CORESERVICES_LIBRARY})
+    target_link_libraries(openlist_csync PRIVATE ${SERVICEMANAGEMENT_LIBRARY})
 endif()
 
 set_target_properties(
-  nextcloud_csync
+  openlist_csync
     PROPERTIES
       VERSION
         ${LIBRARY_VERSION}
@@ -117,12 +117,12 @@ if(BUILD_OWNCLOUD_OSX_BUNDLE)
     # with changes macdeployqt has already made).
     #
     # INSTALL_NAME_DIR "@rpath" keeps the dylib's install_name as
-    # @rpath/libnextcloud_csync.0.dylib through cmake --install.  Without it CMake
-    # defaults to ${CMAKE_INSTALL_PREFIX}/lib/libnextcloud_csync.0.dylib and rewrites
+    # @rpath/libopenlist_csync.0.dylib through cmake --install.  Without it CMake
+    # defaults to ${CMAKE_INSTALL_PREFIX}/lib/libopenlist_csync.0.dylib and rewrites
     # the nextcloud executable's @rpath reference to that absolute path during
     # install -- a path nothing is ever installed to -- causing dyld to fail at
-    # launch with "Library not loaded: .../build/.../lib/libnextcloud_csync.0.dylib".
-    set_target_properties(nextcloud_csync PROPERTIES
+    # launch with "Library not loaded: .../build/.../lib/libopenlist_csync.0.dylib".
+    set_target_properties(openlist_csync PROPERTIES
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_NAME_DIR "@rpath"
     )
@@ -131,7 +131,7 @@ endif()
 if(BUILD_OWNCLOUD_OSX_BUNDLE)
   INSTALL(
     TARGETS
-    nextcloud_csync
+    openlist_csync
     LIBRARY DESTINATION
 	${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION
@@ -142,7 +142,7 @@ if(BUILD_OWNCLOUD_OSX_BUNDLE)
 else()
   INSTALL(
   TARGETS
-  nextcloud_csync
+  openlist_csync
   LIBRARY DESTINATION
     ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION
@@ -153,7 +153,7 @@ else()
 endif()
 
 if (WIN32)
-    install(FILES $<TARGET_PDB_FILE:nextcloud_csync> DESTINATION bin OPTIONAL)
+    install(FILES $<TARGET_PDB_FILE:openlist_csync> DESTINATION bin OPTIONAL)
 endif()
 
 configure_file(config_csync.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config_csync.h)

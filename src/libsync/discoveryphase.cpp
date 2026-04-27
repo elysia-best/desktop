@@ -34,7 +34,7 @@ using namespace Qt::StringLiterals;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcDiscovery, "nextcloud.sync.discovery", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcDiscovery, "openlist.sync.discovery", QtInfoMsg)
 
 bool DiscoveryPhase::isInSelectiveSyncBlackList(const QString &path) const
 {

@@ -15,7 +15,7 @@ using namespace Qt::StringLiterals;
 
 namespace OCC::Mac {
 
-Q_LOGGING_CATEGORY(lcFileProviderEditLocallyJob, "nextcloud.gui.fileprovidereditlocally", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFileProviderEditLocallyJob, "openlist.gui.fileprovidereditlocally", QtInfoMsg)
 
 FileProviderEditLocallyJob::FileProviderEditLocallyJob(const AccountStatePtr &accountState,
                                                        const QString &relPath,

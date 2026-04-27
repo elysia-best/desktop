@@ -21,7 +21,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcBandwidthManager, "nextcloud.sync.bandwidthmanager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcBandwidthManager, "openlist.sync.bandwidthmanager", QtInfoMsg)
 
 // FIXME At some point:
 //  * Register device only after the QNR received its metaDataChanged() signal

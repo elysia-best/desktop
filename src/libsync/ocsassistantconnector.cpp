@@ -20,7 +20,7 @@ namespace OCC {
 
 namespace {
 
-Q_LOGGING_CATEGORY(lcOcsAssistantConnector, "nextcloud.sync.ocsassistantconnector", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcOcsAssistantConnector, "openlist.sync.ocsassistantconnector", QtInfoMsg)
 
 const auto basePath = u"/ocs/v2.php/taskprocessing"_s;
 const auto assistantSystemPrompt = QStringLiteral(

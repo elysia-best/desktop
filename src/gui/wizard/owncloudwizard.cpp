@@ -40,7 +40,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcWizard, "nextcloud.gui.wizard", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcWizard, "openlist.gui.wizard", QtInfoMsg)
 
 OwncloudWizard::OwncloudWizard(QWidget *parent)
     : QWizard(parent)

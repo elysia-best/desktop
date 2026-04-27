@@ -23,7 +23,7 @@
 #include <QPixmapCache>
 
 namespace {
-Q_LOGGING_CATEGORY(lcOcsProfileConnector, "nextcloud.gui.ocsprofileconnector", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcOcsProfileConnector, "openlist.gui.ocsprofileconnector", QtInfoMsg)
 
 OCC::HovercardAction jsonToAction(const QJsonObject &jsonActionObject)
 {

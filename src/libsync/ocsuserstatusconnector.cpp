@@ -26,7 +26,7 @@ using namespace Qt::StringLiterals;
 
 namespace {
 
-Q_LOGGING_CATEGORY(lcOcsUserStatusConnector, "nextcloud.gui.ocsuserstatusconnector", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcOcsUserStatusConnector, "openlist.gui.ocsuserstatusconnector", QtInfoMsg)
 
 OCC::UserStatus::OnlineStatus stringToUserOnlineStatus(const QString &status)
 {

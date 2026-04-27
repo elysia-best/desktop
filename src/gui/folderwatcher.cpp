@@ -38,7 +38,7 @@ constexpr auto lockChangeDebouncingTimerIntervalMs = 500;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFolderWatcher, "nextcloud.gui.folderwatcher", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFolderWatcher, "openlist.gui.folderwatcher", QtInfoMsg)
 
 FolderWatcher::FolderWatcher(Folder *folder)
     : QObject(folder)

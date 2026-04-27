@@ -18,7 +18,7 @@ static constexpr QLatin1String NOTIFY_FILE_ID_PREFIX = QLatin1String{"notify_fil
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcPushNotifications, "nextcloud.sync.pushnotifications", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPushNotifications, "openlist.sync.pushnotifications", QtInfoMsg)
 
 PushNotifications::PushNotifications(Account *account, QObject *parent)
     : QObject(parent)

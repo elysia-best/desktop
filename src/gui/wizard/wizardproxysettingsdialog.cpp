@@ -10,7 +10,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcWizardProxySettings, "nextcloud.gui.wizard.proxysettings", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcWizardProxySettings, "openlist.gui.wizard.proxysettings", QtInfoMsg)
 
 WizardProxySettingsDialog::WizardProxySettingsDialog(QUrl serverURL,
                                                      WizardProxySettings proxySettings,

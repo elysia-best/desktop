@@ -15,7 +15,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcLockFileJob, "nextcloud.sync.networkjob.lockfile", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcLockFileJob, "openlist.sync.networkjob.lockfile", QtInfoMsg)
 
 LockFileJob::LockFileJob(const AccountPtr account,
                          SyncJournalDb* const journal,

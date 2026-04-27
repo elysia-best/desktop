@@ -42,18 +42,18 @@ using namespace Qt::StringLiterals;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcEtagJob, "nextcloud.sync.networkjob.etag", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcLsColJob, "nextcloud.sync.networkjob.lscol", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcCheckServerJob, "nextcloud.sync.networkjob.checkserver", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcCheckRedirectCostFreeUrlJob, "nextcloud.sync.networkjob.checkredirectcostfreeurl", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropfindJob, "nextcloud.sync.networkjob.propfind", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcAvatarJob, "nextcloud.sync.networkjob.avatar", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcMkColJob, "nextcloud.sync.networkjob.mkcol", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcProppatchJob, "nextcloud.sync.networkjob.proppatch", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcJsonApiJob, "nextcloud.sync.networkjob.jsonapi", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcSimpleApiJob, "nextcloud.sync.networkjob.simpleapi", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcDetermineAuthTypeJob, "nextcloud.sync.networkjob.determineauthtype", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcSimpleFileJob, "nextcloud.sync.networkjob.simplefilejob", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcEtagJob, "openlist.sync.networkjob.etag", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcLsColJob, "openlist.sync.networkjob.lscol", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCheckServerJob, "openlist.sync.networkjob.checkserver", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCheckRedirectCostFreeUrlJob, "openlist.sync.networkjob.checkredirectcostfreeurl", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropfindJob, "openlist.sync.networkjob.propfind", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAvatarJob, "openlist.sync.networkjob.avatar", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcMkColJob, "openlist.sync.networkjob.mkcol", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcProppatchJob, "openlist.sync.networkjob.proppatch", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcJsonApiJob, "openlist.sync.networkjob.jsonapi", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSimpleApiJob, "openlist.sync.networkjob.simpleapi", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcDetermineAuthTypeJob, "openlist.sync.networkjob.determineauthtype", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSimpleFileJob, "openlist.sync.networkjob.simplefilejob", QtInfoMsg)
 
 constexpr auto notModifiedStatusCode = 304;
 constexpr auto propfindPropElementTagName = "prop";
@@ -334,8 +334,11 @@ QList<QByteArray> LsColJob::properties() const
 
 QList<QByteArray> LsColJob::defaultProperties(FolderType isRootPath, AccountPtr account)
 {
+    Q_UNUSED(account)
+
     auto props = QList<QByteArray>{};
 
+    // Standard WebDAV properties used by both OpenList and legacy OC-compatible servers.
     props << "resourcetype"
           << "getlastmodified"
           << "getcontentlength"
@@ -348,30 +351,11 @@ QList<QByteArray> LsColJob::defaultProperties(FolderType isRootPath, AccountPtr 
           << "http://owncloud.org/ns:downloadURL"
           << "http://owncloud.org/ns:dDC"
           << "http://owncloud.org/ns:permissions"
-          << "http://owncloud.org/ns:checksums"
-          << "http://nextcloud.org/ns:is-encrypted"
-          << "http://nextcloud.org/ns:metadata-files-live-photo"
-          << "http://nextcloud.org/ns:share-attributes";
+          << "http://owncloud.org/ns:checksums";
 
     if (isRootPath == FolderType::RootFolder) {
         props << "http://owncloud.org/ns:data-fingerprint";
     }
-
-    if (account->serverVersionInt() >= Account::makeServerVersion(10, 0, 0)) {
-        // Server older than 10.0 have performances issue if we ask for the share-types on every PROPFIND
-        props << "http://owncloud.org/ns:share-types";
-    }
-    if (account->capabilities().filesLockAvailable()) {
-        props << "http://nextcloud.org/ns:lock"
-              << "http://nextcloud.org/ns:lock-owner-displayname"
-              << "http://nextcloud.org/ns:lock-owner"
-              << "http://nextcloud.org/ns:lock-owner-type"
-              << "http://nextcloud.org/ns:lock-owner-editor"
-              << "http://nextcloud.org/ns:lock-time"
-              << "http://nextcloud.org/ns:lock-timeout"
-              << "http://nextcloud.org/ns:lock-token";
-    }
-    props << "http://nextcloud.org/ns:is-mount-root";
 
     return props;
 }

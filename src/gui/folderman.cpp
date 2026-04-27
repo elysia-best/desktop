@@ -52,7 +52,7 @@ int numberOfSyncJournals(const QString &path)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFolderMan, "nextcloud.gui.folder.manager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFolderMan, "openlist.gui.folder.manager", QtInfoMsg)
 
 FolderMan *FolderMan::_instance = nullptr;
 

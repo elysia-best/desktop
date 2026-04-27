@@ -19,7 +19,7 @@
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcUserGroupShare, "nextcloud.gui.usergroupshare", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUserGroupShare, "openlist.gui.usergroupshare", QtInfoMsg)
 
 namespace OCC {
 

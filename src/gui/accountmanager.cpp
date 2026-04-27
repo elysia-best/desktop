@@ -73,7 +73,7 @@ constexpr auto legacyRelativeConfigLocationC = "/ownCloud/owncloud.cfg";
 constexpr auto legacyCfgFileNameC = "owncloud.cfg";
 
 constexpr auto unbrandedRelativeConfigLocationC = "/Nextcloud/nextcloud.cfg";
-constexpr auto unbrandedCfgFileNameC = "nextcloud.cfg";
+constexpr auto unbrandedCfgFileNameC = "openlist.cfg";
 
 // The maximum versions that this client can read
 constexpr auto maxAccountsVersion = 13;
@@ -88,7 +88,7 @@ constexpr auto generalC = "General";
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcAccountManager, "nextcloud.gui.account.manager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccountManager, "openlist.gui.account.manager", QtInfoMsg)
 
 AccountManager *AccountManager::instance()
 {

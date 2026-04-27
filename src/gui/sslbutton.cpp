@@ -18,7 +18,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcSsl, "nextcloud.gui.ssl", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSsl, "openlist.gui.ssl", QtInfoMsg)
 
 SslButton::SslButton(QWidget *parent)
     : QToolButton(parent)

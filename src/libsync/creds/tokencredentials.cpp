@@ -20,7 +20,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcTokenCredentials, "nextcloud.sync.credentials.token", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcTokenCredentials, "openlist.sync.credentials.token", QtInfoMsg)
 
 namespace {
 

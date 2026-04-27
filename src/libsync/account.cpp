@@ -63,7 +63,7 @@ constexpr auto isSkipE2eeMetadataChecksumValidationAllowedInClientVersion = MIRA
 }
 
 namespace OCC {
-Q_LOGGING_CATEGORY(lcAccount, "nextcloud.sync.account", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccount, "openlist.sync.account", QtInfoMsg)
 const char app_password[] = "_app-password";
 
 Account::Account(QObject *parent)
@@ -120,7 +120,8 @@ void Account::setSharedThis(AccountPtr sharedThis)
 
 QString Account::davPathBase()
 {
-    return QStringLiteral("/remote.php/dav/files");
+    // OpenList serves WebDAV at /dav/<username>/ — the username is appended by davPathRoot().
+    return QStringLiteral("/dav");
 }
 
 AccountPtr Account::sharedFromThis()

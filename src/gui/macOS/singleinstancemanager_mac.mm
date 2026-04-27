@@ -11,7 +11,7 @@
 #include <QLoggingCategory>
 
 namespace {
-Q_LOGGING_CATEGORY(lcSingleInstance, "nextcloud.gui.singleinstance", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSingleInstance, "openlist.gui.singleinstance", QtInfoMsg)
 }
 
 namespace OCC {

@@ -14,7 +14,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFileActions, "nextcloud.gui.fileactions", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFileActions, "openlist.gui.fileactions", QtInfoMsg)
 
 FileActionsModel::FileActionsModel(QObject *parent)
     : QAbstractListModel(parent)

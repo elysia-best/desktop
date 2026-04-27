@@ -65,7 +65,7 @@ bool hasConfiguredSyncSource(const OCC::AccountStatePtr &accountState)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcSyncStatusModel, "nextcloud.gui.syncstatusmodel", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSyncStatusModel, "openlist.gui.syncstatusmodel", QtInfoMsg)
 
 SyncStatusSummary::SyncStatusSummary(QObject *parent)
     : QObject(parent)

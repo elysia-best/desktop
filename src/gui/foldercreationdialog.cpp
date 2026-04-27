@@ -14,7 +14,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFolderCreationDialog, "nextcloud.gui.foldercreationdialog", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFolderCreationDialog, "openlist.gui.foldercreationdialog", QtInfoMsg)
 
 FolderCreationDialog::FolderCreationDialog(const QString &destination, QWidget *parent)
     : QDialog(parent)

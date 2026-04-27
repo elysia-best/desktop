@@ -28,7 +28,7 @@ endif()
 
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-include(${CMAKE_SOURCE_DIR}/NEXTCLOUD.cmake)
+include(${CMAKE_SOURCE_DIR}/OPENLIST.cmake)
 
 set(QT_VERSION_MAJOR "6")
 set(REQUIRED_QT_VERSION "6.8.0")
@@ -48,7 +48,7 @@ set( CFAPI_SHELLEXT_THUMBNAIL_HANDLER_CLASS_ID_REG "{${CFAPI_SHELLEXT_THUMBNAIL_
 set( CFAPI_SHELLEXT_THUMBNAIL_HANDLER_DISPLAY_NAME "${APPLICATION_NAME} Thumbnail Handler" )
 
 # URI Handler Scheme for Local File Editing
-set( APPLICATION_URI_HANDLER_SCHEME "nc")
+set( APPLICATION_URI_HANDLER_SCHEME "openlist")
 
 # Default suffix if the theme doesn't define one
 if(NOT DEFINED APPLICATION_VIRTUALFILE_SUFFIX)
@@ -215,8 +215,8 @@ option(BUILD_GUI "BUILD_GUI" ON)
 # build the tests
 option(BUILD_TESTING "BUILD_TESTING" ON)
 
-# allows to run nextclouddev in parallel to nextcloud + logs
-option(NEXTCLOUD_DEV "NEXTCLOUD_DEV" OFF)
+# allows to run openlistdev in parallel to openlist + logs
+option(OPENLIST_DEV "OPENLIST_DEV" OFF)
 
 option(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY" OFF)
 if(ENABLE_CLANG_TIDY)

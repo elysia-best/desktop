@@ -14,7 +14,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcUpdateFileDropMetadataJob, "nextcloud.sync.propagator.updatee2eefoldermetadatajob", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUpdateFileDropMetadataJob, "openlist.sync.propagator.updatee2eefoldermetadatajob", QtInfoMsg)
 
 }
 

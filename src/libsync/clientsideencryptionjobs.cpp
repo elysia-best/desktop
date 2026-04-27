@@ -23,10 +23,10 @@
 #include "creds/abstractcredentials.h"
 #include "common/syncjournaldb.h"
 
-Q_LOGGING_CATEGORY(lcSignPublicKeyApiJob, "nextcloud.sync.networkjob.sendcsr", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcStorePublicKeyApiJob, "nextcloud.sync.networkjob.storepublickey", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcStorePrivateKeyApiJob, "nextcloud.sync.networkjob.storeprivatekey", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcCseJob, "nextcloud.sync.networkjob.clientsideencrypt", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSignPublicKeyApiJob, "openlist.sync.networkjob.sendcsr", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcStorePublicKeyApiJob, "openlist.sync.networkjob.storepublickey", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcStorePrivateKeyApiJob, "openlist.sync.networkjob.storeprivatekey", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCseJob, "openlist.sync.networkjob.clientsideencrypt", QtInfoMsg)
 
 namespace
 {

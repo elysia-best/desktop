@@ -26,7 +26,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcHttpCredentials, "nextcloud.sync.credentials.http", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcHttpCredentials, "openlist.sync.credentials.http", QtInfoMsg)
 
 namespace {
     const char userC[] = "user";

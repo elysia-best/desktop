@@ -13,7 +13,7 @@
 #include <QFile>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(lcVfsXAttr, "nextcloud.sync.vfs.xattr", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcVfsXAttr, "openlist.sync.vfs.xattr", QtInfoMsg)
 
 namespace xattr {
 using namespace OCC::XAttrWrapper;

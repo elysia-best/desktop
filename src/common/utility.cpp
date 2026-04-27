@@ -46,7 +46,7 @@ constexpr qint64 terabytes = bytes * gigabytes;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcUtility, "nextcloud.sync.utility", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUtility, "openlist.sync.utility", QtInfoMsg)
 
 bool Utility::writeRandomFile(const QString &fname, int size)
 {

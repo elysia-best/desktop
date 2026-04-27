@@ -22,7 +22,7 @@
 
 #include <QCoreApplication>
 
-Q_LOGGING_CATEGORY(lcCfApi, "nextcloud.sync.vfs.cfapi", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCfApi, "openlist.sync.vfs.cfapi", QtInfoMsg)
 
 namespace cfapi {
 using namespace OCC::CfApiWrapper;

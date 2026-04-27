@@ -36,7 +36,7 @@ constexpr auto delayIntervalForSyncRetryForFilesExceedQuotaSeconds = 60;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcDisco, "nextcloud.sync.discovery", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcDisco, "openlist.sync.discovery", QtInfoMsg)
 
 ProcessDirectoryJob::ProcessDirectoryJob(DiscoveryPhase *data, PinState basePinState, qint64 lastSyncTimestamp, QObject *parent)
     : QObject(parent)

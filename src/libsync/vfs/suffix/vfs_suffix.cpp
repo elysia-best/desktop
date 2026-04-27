@@ -13,7 +13,7 @@
 #include <QFile>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(lcVfsSuffix, "nextcloud.sync.vfs.suffix", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcVfsSuffix, "openlist.sync.vfs.suffix", QtInfoMsg)
 
 namespace OCC {
 

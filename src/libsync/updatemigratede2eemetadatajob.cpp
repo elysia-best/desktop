@@ -13,7 +13,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcUpdateMigratedE2eeMetadataJob, "nextcloud.sync.propagator.updatemigratede2eemetadatajob", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUpdateMigratedE2eeMetadataJob, "openlist.sync.propagator.updatemigratede2eemetadatajob", QtInfoMsg)
 
 }
 

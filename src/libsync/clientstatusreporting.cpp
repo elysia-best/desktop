@@ -11,7 +11,7 @@
 
 namespace OCC
 {
-Q_LOGGING_CATEGORY(lcClientStatusReporting, "nextcloud.sync.clientstatusreporting", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcClientStatusReporting, "openlist.sync.clientstatusreporting", QtInfoMsg)
 
 ClientStatusReporting::ClientStatusReporting(Account *account)
 {

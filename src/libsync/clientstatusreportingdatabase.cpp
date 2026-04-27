@@ -19,7 +19,7 @@ constexpr auto statusNamesHash = "statusNamesHash";
 
 namespace OCC
 {
-Q_LOGGING_CATEGORY(lcClientStatusReportingDatabase, "nextcloud.sync.clientstatusreportingdatabase", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcClientStatusReportingDatabase, "openlist.sync.clientstatusreportingdatabase", QtInfoMsg)
 
 ClientStatusReportingDatabase::ClientStatusReportingDatabase(const Account *account)
 {

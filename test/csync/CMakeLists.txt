@@ -18,7 +18,7 @@ include_directories(
 add_library(${TORTURE_LIBRARY} STATIC torture.c cmdline.c)
 target_link_libraries(${TORTURE_LIBRARY} ${CMOCKA_LIBRARIES})
 
-set(TEST_TARGET_LIBRARIES ${TORTURE_LIBRARY} Qt::Core Nextcloud::csync)
+set(TEST_TARGET_LIBRARIES ${TORTURE_LIBRARY} Qt::Core OpenList::csync)
 
 # create tests
 

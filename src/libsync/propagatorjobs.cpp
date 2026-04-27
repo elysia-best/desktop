@@ -29,9 +29,9 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcPropagateLocalRemove, "nextcloud.sync.propagator.localremove", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropagateLocalMkdir, "nextcloud.sync.propagator.localmkdir", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropagateLocalRename, "nextcloud.sync.propagator.localrename", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateLocalRemove, "openlist.sync.propagator.localremove", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateLocalMkdir, "openlist.sync.propagator.localmkdir", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateLocalRename, "openlist.sync.propagator.localrename", QtInfoMsg)
 
 QByteArray localFileIdFromFullId(const QByteArray &id)
 {

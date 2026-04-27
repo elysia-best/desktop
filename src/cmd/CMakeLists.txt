@@ -12,7 +12,7 @@ add_library(cmdCore STATIC
 
 target_link_libraries(cmdCore
   PUBLIC
-  Nextcloud::sync
+  OpenList::sync
   Qt::Core
   Qt::Network
   )

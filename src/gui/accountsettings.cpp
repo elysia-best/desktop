@@ -94,7 +94,7 @@ namespace OCC {
 
 class AccountSettings;
 
-Q_LOGGING_CATEGORY(lcAccountSettings, "nextcloud.gui.account.settings", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccountSettings, "openlist.gui.account.settings", QtInfoMsg)
 
 void showEnableE2eeWithVirtualFilesWarningDialog(std::function<void(void)> onAccept)
 {

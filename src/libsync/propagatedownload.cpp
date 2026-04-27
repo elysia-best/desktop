@@ -32,8 +32,8 @@ namespace OCC {
 
 static constexpr auto CustomDecompressedSafetyCheckThreshold = 20 * 1024 * 1024;
 
-Q_LOGGING_CATEGORY(lcGetJob, "nextcloud.sync.networkjob.get", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropagateDownload, "nextcloud.sync.propagator.download", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcGetJob, "openlist.sync.networkjob.get", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateDownload, "openlist.sync.propagator.download", QtInfoMsg)
 
 // Always coming in with forward slashes.
 // In csync_excluded_no_ctx we ignore all files with longer than 254 chars
@@ -950,6 +950,9 @@ void PropagateDownloadFile::slotGetFinished()
     // (we can't reliably determine the file id of the base file here,
     // it might still be downloaded in a parallel job and not exist in
     // the database yet!)
+    // Note: OC-Conflict headers are Nextcloud-specific. OpenList's WebDAV layer
+    // does not send them, so this block will be a no-op in practice but is
+    // kept for compatibility when connecting to servers that do provide them.
     if (job->reply()->rawHeader("OC-Conflict") == "1") {
         _conflictRecord.path = _item->_file.toUtf8();
         _conflictRecord.initialBasePath = job->reply()->rawHeader("OC-ConflictInitialBasePath");

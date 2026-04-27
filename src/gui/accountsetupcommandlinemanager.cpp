@@ -8,7 +8,7 @@
 
 namespace OCC
 {
-Q_LOGGING_CATEGORY(lcAccountSetupCommandLineManager, "nextcloud.gui.accountsetupcommandlinemanager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccountSetupCommandLineManager, "openlist.gui.accountsetupcommandlinemanager", QtInfoMsg)
 
 AccountSetupCommandLineManager *AccountSetupCommandLineManager::_instance = nullptr;
 

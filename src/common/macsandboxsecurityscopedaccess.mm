@@ -9,7 +9,7 @@
 
 #import <Foundation/Foundation.h>
 
-Q_LOGGING_CATEGORY(lcMacSandbox, "nextcloud.common.mac.sandbox", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcMacSandbox, "openlist.common.mac.sandbox", QtInfoMsg)
 
 namespace OCC {
 namespace Utility {

@@ -23,7 +23,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcConnectionValidator, "nextcloud.sync.connectionvalidator", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcConnectionValidator, "openlist.sync.connectionvalidator", QtInfoMsg)
 
 // Make sure the timeout for this job is less than how often we get called
 // This makes sure we get tried often enough without "ConnectionValidator already running"
@@ -120,7 +120,7 @@ void ConnectionValidator::slotStatusFound(const QUrl &url, const QJsonObject &in
     QString serverVersion = CheckServerJob::version(info);
 
     // status.php was found.
-    qCInfo(lcConnectionValidator) << "** Application: Nextcloud found: "
+    qCInfo(lcConnectionValidator) << "** Application: OpenList found: "
                                   << url << " with version "
                                   << CheckServerJob::versionString(info)
                                   << "(" << serverVersion << ")";

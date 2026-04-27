@@ -40,7 +40,7 @@ static QByteArray BIO2ByteArray(OCC::Bio &b) {
 namespace OCC
 {
 
-Q_LOGGING_CATEGORY(lcCseSelector, "nextcloud.sync.clientsideencryption.selector", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCseSelector, "openlist.sync.clientsideencryption.selector", QtInfoMsg)
 
 ClientSideEncryptionTokenSelector::ClientSideEncryptionTokenSelector(QObject *parent)
     : QObject{parent}

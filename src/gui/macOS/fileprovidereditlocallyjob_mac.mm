@@ -21,7 +21,7 @@
 namespace OCC::Mac {
 
 Q_LOGGING_CATEGORY(lcFileProviderEditLocallyMacJob, 
-                   "nextcloud.gui.fileprovidereditlocallymac",
+                   "openlist.gui.fileprovidereditlocallymac",
                    QtInfoMsg)
 
 void FileProviderEditLocallyJob::openFileProviderFile(const QString &ocId)

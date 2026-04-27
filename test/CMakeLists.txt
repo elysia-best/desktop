@@ -23,7 +23,7 @@ add_library(testutils
   foldermantestutils.cpp
 )
 
-target_link_libraries(testutils PUBLIC Nextcloud::sync Qt::Test Qt::Core5Compat)
+target_link_libraries(testutils PUBLIC OpenList::sync Qt::Test Qt::Core5Compat)
 target_include_directories(testutils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(testutils PROPERTIES FOLDER Tests)
 
@@ -114,7 +114,7 @@ nextcloud_add_test(FileSystem)
 
 nextcloud_add_test(FolderStatusModel)
 
-target_link_libraries(SecureFileDropTest PRIVATE Nextcloud::sync)
+target_link_libraries(SecureFileDropTest PRIVATE OpenList::sync)
 configure_file(fake2eelocksucceeded.json "${PROJECT_BINARY_DIR}/bin/fake2eelocksucceeded.json" COPYONLY)
 configure_file(fakefiledrope2eefoldermetadata.json "${PROJECT_BINARY_DIR}/bin/fakefiledrope2eefoldermetadata.json" COPYONLY)
 configure_file(e2etestsfakecert.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecert.pem" COPYONLY)

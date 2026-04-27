@@ -12,7 +12,7 @@
 namespace OCC
 {
 
-Q_LOGGING_CATEGORY(lcCseUtility, "nextcloud.sync.clientsideencryption.utility", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCseUtility, "openlist.sync.clientsideencryption.utility", QtInfoMsg)
 
 Bio::operator const BIO *() const
 {

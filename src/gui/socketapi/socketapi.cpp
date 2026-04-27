@@ -221,8 +221,8 @@ void setClipboardText(const QString &text)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcSocketApi, "nextcloud.gui.socketapi", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPublicLink, "nextcloud.gui.socketapi.publiclink", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSocketApi, "openlist.gui.socketapi", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPublicLink, "openlist.gui.socketapi.publiclink", QtInfoMsg)
 
 
 void SocketListener::sendMessage(const QString &message, bool doWait) const

@@ -14,7 +14,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcOcs, "nextcloud.gui.sharing.ocs", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcOcs, "openlist.gui.sharing.ocs", QtInfoMsg)
 
 OcsJob::OcsJob(AccountPtr account)
     : AbstractNetworkJob(account, "")

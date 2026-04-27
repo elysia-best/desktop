@@ -13,7 +13,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcCredentials, "nextcloud.sync.credentials", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCredentials, "openlist.sync.credentials", QtInfoMsg)
 
 AbstractCredentials::AbstractCredentials() = default;
 

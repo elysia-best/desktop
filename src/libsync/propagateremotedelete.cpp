@@ -16,7 +16,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcPropagateRemoteDelete, "nextcloud.sync.propagator.remotedelete", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateRemoteDelete, "openlist.sync.propagator.remotedelete", QtInfoMsg)
 
 void PropagateRemoteDelete::start()
 {

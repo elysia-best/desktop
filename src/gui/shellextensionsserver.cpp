@@ -22,7 +22,7 @@ constexpr auto isSharedInvalidationInterval = 2 * 60 * 1000; // 2 minutes, so we
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcShellExtServer, "nextcloud.gui.shellextensions.server", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcShellExtServer, "openlist.gui.shellextensions.server", QtInfoMsg)
 
 ShellExtensionsServer::ShellExtensionsServer(QObject *parent)
     : QObject(parent)

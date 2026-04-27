@@ -19,7 +19,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcWizardWebiewPage, "nextcloud.gui.wizard.webviewpage", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcWizardWebiewPage, "openlist.gui.wizard.webviewpage", QtInfoMsg)
 
 
 WebViewPage::WebViewPage(QWidget *parent)
@@ -39,7 +39,7 @@ void WebViewPage::initializePage() {
 
     QString url;
     if (_ocWizard->registration()) {
-        url = "https://nextcloud.com/register";
+        url = "https://github.com/OpenListTeam/OpenList";
     } else {
         url = Utility::trailingSlashPath(_ocWizard->ocUrl()) + "index.php/login/flow";
     }

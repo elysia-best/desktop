@@ -16,7 +16,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcTosCheckWidget, "nextcloud.gui.wizard.termsofservicecheckwidget", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcTosCheckWidget, "openlist.gui.wizard.termsofservicecheckwidget", QtInfoMsg)
 
 
 TermsOfServiceCheckWidget::TermsOfServiceCheckWidget(QWidget *parent)

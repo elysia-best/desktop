@@ -21,7 +21,7 @@ using namespace QKeychain;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcHttpCredentialsGui, "nextcloud.sync.credentials.http.gui", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcHttpCredentialsGui, "openlist.sync.credentials.http.gui", QtInfoMsg)
 
 void HttpCredentialsGui::askFromUser()
 {

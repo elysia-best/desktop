@@ -81,7 +81,7 @@ public:
      * @brief isBranded indicates if the current application is branded
      *
      * By default, it is considered branded if the APPLICATION_NAME is
-     * different from "Nextcloud".
+     * different from "OpenList".
      *
      * @return true if branded, false otherwise
      */

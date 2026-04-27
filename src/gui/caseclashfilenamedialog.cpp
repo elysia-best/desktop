@@ -57,7 +57,7 @@ QString caseClashIllegalCharacterListToString(const QVector<QChar> &illegalChara
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcCaseClashConflictFialog, "nextcloud.sync.caseclash.dialog", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCaseClashConflictFialog, "openlist.sync.caseclash.dialog", QtInfoMsg)
 
 CaseClashFilenameDialog::CaseClashFilenameDialog(AccountPtr account,
                                                  Folder *folder,

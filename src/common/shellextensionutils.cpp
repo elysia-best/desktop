@@ -9,7 +9,7 @@
 
 namespace VfsShellExtensions {
 
-Q_LOGGING_CATEGORY(lcShellExtensionUtils, "nextcloud.gui.shellextensionutils", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcShellExtensionUtils, "openlist.gui.shellextensionutils", QtInfoMsg)
 
 QString VfsShellExtensions::serverNameForApplicationName(const QString &applicationName)
 {

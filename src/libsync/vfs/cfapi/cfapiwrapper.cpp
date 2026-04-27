@@ -31,7 +31,7 @@
 #include <comdef.h>
 #include <memory>
 
-Q_LOGGING_CATEGORY(lcCfApiWrapper, "nextcloud.sync.vfs.cfapi.wrapper", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCfApiWrapper, "openlist.sync.vfs.cfapi.wrapper", QtInfoMsg)
 using namespace Qt::Literals::StringLiterals;
 
 #define FIELD_SIZE( type, field ) ( sizeof( ( (type*)0 )->field ) )

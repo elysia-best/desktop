@@ -40,7 +40,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcSystray, "nextcloud.gui.systray")
+Q_LOGGING_CATEGORY(lcSystray, "openlist.gui.systray")
 
 Systray *Systray::_instance = nullptr;
 
