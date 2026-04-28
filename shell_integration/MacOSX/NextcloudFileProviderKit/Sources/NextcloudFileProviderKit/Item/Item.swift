@@ -201,7 +201,7 @@ public final class Item: NSObject, NSFileProviderItem, Sendable {
         userInfoDict["displayAllowAutoEvicting"] = metadata.keepDownloaded
         userInfoDict["displayEvict"] = metadata.downloaded && !metadata.keepDownloaded
 
-        // https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/basic.html
+        // https://docs.oplist.org/server/latest/developer_manual/client_apis/WebDAV/basic.html
         if metadata.permissions.uppercased().contains("R") /* Shareable */, ![.rootContainer, .trashContainer].contains(itemIdentifier) {
             userInfoDict["displayShare"] = true
         }

@@ -24,8 +24,6 @@ endif()
 set(libsync_SRCS
     account.h
     account.cpp
-    pushnotifications.h
-    pushnotifications.cpp
     wordlist.h
     wordlist.cpp
     bandwidthmanager.h
@@ -34,25 +32,12 @@ set(libsync_SRCS
     capabilities.cpp
     clientproxy.h
     clientproxy.cpp
-    clientstatusreporting.h
-    clientstatusreporting.cpp
-    clientstatusreportingcommon.h
-    clientstatusreportingcommon.cpp
-    clientstatusreportingdatabase.h
-    clientstatusreportingdatabase.cpp
-    clientstatusreportingnetwork.h
-    clientstatusreportingnetwork.cpp
-    clientstatusreportingrecord.h
     cookiejar.h
     cookiejar.cpp
     discovery.h
     discovery.cpp
     discoveryphase.h
     discoveryphase.cpp
-    encryptfolderjob.h
-    encryptfolderjob.cpp
-    encryptedfoldermetadatahandler.h
-    encryptedfoldermetadatahandler.cpp
     filesystem.h
     filesystem.cpp
     helpers.cpp
@@ -78,8 +63,6 @@ set(libsync_SRCS
     openlisttheme.cpp
     openlistsettings.h
     openlistsettings.cpp
-    basepropagateremotedeleteencrypted.h
-    basepropagateremotedeleteencrypted.cpp
     deletejob.h
     deletejob.cpp
     progressdispatcher.h
@@ -100,18 +83,10 @@ set(libsync_SRCS
     putmultifilejob.cpp
     propagateremotedelete.h
     propagateremotedelete.cpp
-    propagateremotedeleteencrypted.h
-    propagateremotedeleteencrypted.cpp
-    propagateremotedeleteencryptedrootfolder.h
-    propagateremotedeleteencryptedrootfolder.cpp
     propagateremotemove.h
     propagateremotemove.cpp
     propagateremotemkdir.h
     propagateremotemkdir.cpp
-    propagateuploadencrypted.h
-    propagateuploadencrypted.cpp
-    propagatedownloadencrypted.h
-    propagatedownloadencrypted.cpp
     syncengine.h
     syncengine.cpp
     syncfileitem.h
@@ -126,38 +101,8 @@ set(libsync_SRCS
     syncoptions.cpp
     theme.h
     theme.cpp
-    updatee2eefoldermetadatajob.h
-    updatee2eefoldermetadatajob.cpp
-    updatemigratede2eemetadatajob.h
-    updatemigratede2eemetadatajob.cpp
-    updatee2eefolderusersmetadatajob.h
-    updatee2eefolderusersmetadatajob.cpp
-    clientsideencryption.h
-    clientsideencryption.cpp
-    clientsideencryptionjobs.h
-    clientsideencryptionjobs.cpp
-    clientsideencryptionprimitives.h
-    clientsideencryptionprimitives.cpp
-    clientsideencryptiontokenselector.h
-    clientsideencryptiontokenselector.cpp
     datetimeprovider.h
     datetimeprovider.cpp
-    rootencryptedfolderinfo.h
-    rootencryptedfolderinfo.cpp
-    foldermetadata.h
-    foldermetadata.cpp
-    ocsassistantconnector.h
-    ocsassistantconnector.cpp
-    ocsuserstatusconnector.h
-    ocsuserstatusconnector.cpp
-    rootencryptedfolderinfo.cpp
-    rootencryptedfolderinfo.h
-    userstatusconnector.h
-    userstatusconnector.cpp
-    ocsprofileconnector.h
-    ocsprofileconnector.cpp
-    lockfilejobs.h
-    lockfilejobs.cpp
     creds/dummycredentials.h
     creds/dummycredentials.cpp
     creds/abstractcredentials.h

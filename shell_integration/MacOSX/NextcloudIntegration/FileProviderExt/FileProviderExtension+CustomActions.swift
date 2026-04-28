@@ -12,7 +12,7 @@ extension FileProviderExtension: NSFileProviderCustomAction {
         completionHandler: @escaping ((any Error)?) -> Void
     ) -> Progress {
         switch actionIdentifier.rawValue {
-        case "com.nextcloud.desktopclient.FileProviderExt.FileActionsAction":
+        case "org.openlist.desktopclient.FileProviderExt.FileActionsAction":
             guard let itemIdentifier = itemIdentifiers.first else {
                 logger.error("Failed to get first item identifier for file actions action.")
                 completionHandler(NSFileProviderError(.noSuchItem))
@@ -46,13 +46,13 @@ extension FileProviderExtension: NSFileProviderCustomAction {
             }
 
             return Progress()
-        case "com.nextcloud.desktopclient.FileProviderExt.KeepDownloadedAction":
+        case "org.openlist.desktopclient.FileProviderExt.KeepDownloadedAction":
             return performKeepDownloadedAction(
                 keepDownloaded: true,
                 onItemsWithIdentifiers: itemIdentifiers,
                 completionHandler: completionHandler
             )
-        case "com.nextcloud.desktopclient.FileProviderExt.AutoEvictAction":
+        case "org.openlist.desktopclient.FileProviderExt.AutoEvictAction":
             return performKeepDownloadedAction(
                 keepDownloaded: false,
                 onItemsWithIdentifiers: itemIdentifiers,

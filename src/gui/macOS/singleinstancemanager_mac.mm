@@ -66,12 +66,12 @@ SingleInstanceManager::~SingleInstanceManager()
 QString SingleInstanceManager::socketPath()
 {
     // In a sandboxed macOS app QDir::homePath() resolves to
-    //   ~/Library/Containers/com.nextcloud.desktopclient/Data
+    //   ~/Library/Containers/org.openlist.desktopclient/Data
     // The App Sandbox grants both file-write and network-bind access to this
     // directory on all macOS versions, without any extra entitlements.
     //
     // Path budget check (worst case: macOS-maximum 31-char username):
-    //   /Users/<31 chars>/Library/Containers/com.nextcloud.desktopclient/Data/si
+    //   /Users/<31 chars>/Library/Containers/org.openlist.desktopclient/Data/si
     //   = 7 + 31 + 20 + 27 + 5 + 3 = 93 bytes  (limit: 103)
     return QDir::homePath() + QStringLiteral("/si");
 }

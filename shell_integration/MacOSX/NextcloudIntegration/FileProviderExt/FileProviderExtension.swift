@@ -41,7 +41,7 @@ import OSLog
     var connections = Set<NSXPCConnection>()
 
     var listener = NSXPCListener.anonymous()
-    let serviceName = NSFileProviderServiceName("com.nextcloud.desktopclient.ClientCommunicationService")
+    let serviceName = NSFileProviderServiceName("org.openlist.desktopclient.ClientCommunicationService")
 
     ///
     /// NextcloudKit instance used by this file provider extension object.

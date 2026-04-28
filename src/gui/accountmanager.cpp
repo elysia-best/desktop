@@ -72,7 +72,7 @@ constexpr auto networkProxyPasswordKeychainKeySuffixC = "_proxy_password";
 constexpr auto legacyRelativeConfigLocationC = "/ownCloud/owncloud.cfg";
 constexpr auto legacyCfgFileNameC = "owncloud.cfg";
 
-constexpr auto unbrandedRelativeConfigLocationC = "/Nextcloud/nextcloud.cfg";
+constexpr auto unbrandedRelativeConfigLocationC = "/OpenList/openlist.cfg";
 constexpr auto unbrandedCfgFileNameC = "openlist.cfg";
 
 // The maximum versions that this client can read

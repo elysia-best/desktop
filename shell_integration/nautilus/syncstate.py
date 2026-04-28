@@ -21,7 +21,7 @@ from gi.repository import GObject, Nautilus
 
 # Note: setappname.sh will search and replace 'Nextcloud' on this file to update this line and other
 # occurrences of the name
-appname = 'Nextcloud'
+appname = 'OpenList'
 
 print("Initializing "+appname+"-client-nautilus extension")
 print("Using python version {}".format(sys.version_info))
@@ -166,7 +166,7 @@ class SocketConnect(GObject.GObject):
 socketConnect = SocketConnect()
 
 
-class MenuExtension_Nextcloud(GObject.GObject, Nautilus.MenuProvider):
+class MenuExtension_OpenList(GObject.GObject, Nautilus.MenuProvider):
     def __init__(self):
         GObject.GObject.__init__(self)
 
@@ -261,18 +261,18 @@ class MenuExtension_Nextcloud(GObject.GObject, Nautilus.MenuProvider):
         if len(menu_items) == 0:
             return []
 
-        # Set up the 'Nextcloud...' submenu
-        item_nextcloud = Nautilus.MenuItem(
+        # Set up the 'OpenList...' submenu
+        item_openlist = Nautilus.MenuItem(
             name='IntegrationMenu', label=self.strings.get('CONTEXT_MENU_TITLE', appname))
         menu = Nautilus.Menu()
-        item_nextcloud.set_submenu(menu)
+        item_openlist.set_submenu(menu)
 
         for action, enabled, label in menu_items:
             item = Nautilus.MenuItem(name=action, label=label, sensitive=enabled)
             item.connect("activate", self.context_menu_action, action, filesstring)
             menu.append_item(item)
 
-        return [item_nextcloud]
+        return [item_openlist]
 
 
     def legacy_menu_items(self, files):
@@ -306,11 +306,11 @@ class MenuExtension_Nextcloud(GObject.GObject, Nautilus.MenuProvider):
         if not shareable:
             return []
 
-        # Set up the 'Nextcloud...' submenu
-        item_nextcloud = Nautilus.MenuItem(
+        # Set up the 'OpenList...' submenu
+        item_openlist = Nautilus.MenuItem(
             name='IntegrationMenu', label=self.strings.get('CONTEXT_MENU_TITLE', appname))
         menu = Nautilus.Menu()
-        item_nextcloud.set_submenu(menu)
+        item_openlist.set_submenu(menu)
 
         # Add share menu option
         item = Nautilus.MenuItem(
@@ -333,7 +333,7 @@ class MenuExtension_Nextcloud(GObject.GObject, Nautilus.MenuProvider):
             item_emailprivatelink.connect("activate", self.context_menu_action, 'EMAIL_PRIVATE_LINK', filename)
             menu.append_item(item_emailprivatelink)
 
-        return [item_nextcloud]
+        return [item_openlist]
 
 
     def context_menu_action(self, menu, action, filename):
@@ -341,7 +341,7 @@ class MenuExtension_Nextcloud(GObject.GObject, Nautilus.MenuProvider):
         socketConnect.sendCommand(action + ":" + filename + "\n")
 
 
-class SyncStateExtension_Nextcloud(GObject.GObject, Nautilus.InfoProvider):
+class SyncStateExtension_OpenList(GObject.GObject, Nautilus.InfoProvider):
     def __init__(self):
         GObject.GObject.__init__(self)
 

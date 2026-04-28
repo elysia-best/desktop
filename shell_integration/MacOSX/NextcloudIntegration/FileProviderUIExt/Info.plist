@@ -25,7 +25,7 @@
 				<key>NSExtensionFileProviderActionActivationRule</key>
 				<string>SUBQUERY ( fileproviderItems, $fileproviderItem, $fileproviderItem.userInfo.locked != nil &amp;&amp; !($fileproviderItem.contentType.identifier UTI-CONFORMS-TO "public.folder") ).@count &gt; 0</string>
 				<key>NSExtensionFileProviderActionIdentifier</key>
-				<string>com.nextcloud.desktopclient.FileProviderUIExt.UnlockFileAction</string>
+				<string>org.openlist.desktopclient.FileProviderUIExt.UnlockFileAction</string>
 				<key>NSExtensionFileProviderActionName</key>
 				<string>Unlock file</string>
 			</dict>
@@ -33,7 +33,7 @@
 				<key>NSExtensionFileProviderActionActivationRule</key>
 				<string>SUBQUERY ( fileproviderItems, $fileproviderItem, $fileproviderItem.userInfo.locked == nil &amp;&amp; !($fileproviderItem.contentType.identifier UTI-CONFORMS-TO "public.folder") ).@count &gt; 0</string>
 				<key>NSExtensionFileProviderActionIdentifier</key>
-				<string>com.nextcloud.desktopclient.FileProviderUIExt.LockFileAction</string>
+				<string>org.openlist.desktopclient.FileProviderUIExt.LockFileAction</string>
 				<key>NSExtensionFileProviderActionName</key>
 				<string>Lock file</string>
 			</dict>
@@ -41,7 +41,7 @@
 				<key>NSExtensionFileProviderActionActivationRule</key>
 				<string>SUBQUERY ( fileproviderItems, $fileproviderItem, $fileproviderItem.userInfo.displayShare == true ).@count &gt; 0</string>
 				<key>NSExtensionFileProviderActionIdentifier</key>
-				<string>com.nextcloud.desktopclient.FileProviderUIExt.ShareAction</string>
+				<string>org.openlist.desktopclient.FileProviderUIExt.ShareAction</string>
 				<key>NSExtensionFileProviderActionName</key>
 				<string>Share options</string>
 			</dict>
@@ -49,7 +49,7 @@
 				<key>NSExtensionFileProviderActionActivationRule</key>
 				<string>SUBQUERY ( fileproviderItems, $fileproviderItem, $fileproviderItem.userInfo.downloaded == true ).@count &gt; 0</string>
 				<key>NSExtensionFileProviderActionIdentifier</key>
-				<string>com.nextcloud.desktopclient.FileProviderUIExt.EvictAction</string>
+				<string>org.openlist.desktopclient.FileProviderUIExt.EvictAction</string>
 				<key>NSExtensionFileProviderActionName</key>
 				<string>Free up space</string>
 			</dict>
