@@ -18,9 +18,7 @@
 #include "common/asserts.h"
 #include "gui/systray.h"
 #include "logger.h"
-#include <pushnotifications.h>
 #include <syncengine.h>
-#include "updatee2eefolderusersmetadatajob.h"
 
 #ifdef Q_OS_MACOS
 #include <CoreServices/CoreServices.h>
@@ -94,7 +92,7 @@ FolderMan::FolderMan(QObject *parent)
     connect(_lockWatcher.data(), &LockWatcher::fileUnlocked,
         this, &FolderMan::slotWatchedFileUnlocked);
 
-    connect(this, &FolderMan::folderListChanged, this, &FolderMan::slotSetupPushNotifications);
+
 }
 
 FolderMan *FolderMan::instance()
@@ -1094,10 +1092,8 @@ void FolderMan::slotStartScheduledFolderSync()
 
 bool FolderMan::pushNotificationsFilesReady(const AccountPtr &account)
 {
-    const auto pushNotifications = account->pushNotifications();
-    const auto pushFilesAvailable = account->capabilities().availablePushNotifications() & PushNotificationType::Files;
-
-    return pushFilesAvailable && pushNotifications && pushNotifications->isReady();
+    Q_UNUSED(account)
+    return false;
 }
 
 bool FolderMan::isSwitchToVfsNeeded(const FolderDefinition &folderDefinition) const
