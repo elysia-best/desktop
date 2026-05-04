@@ -1,0 +1,305 @@
+# SPDX-FileCopyrightText: 2025 OpenList Team
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+name: Release Build
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      build_linux:
+        description: 'Build Linux AppImage'
+        type: boolean
+        default: true
+      build_macos:
+        description: 'Build macOS DMG'
+        type: boolean
+        default: true
+      build_windows:
+        description: 'Build Windows MSI'
+        type: boolean
+        default: true
+      version_suffix:
+        description: 'Version suffix override (e.g., rc1, beta1)'
+        type: string
+        default: ''
+
+jobs:
+  # ── Linux AppImage ──────────────────────────────────────────────
+  linux-appimage:
+    name: Linux AppImage
+    if: ${{ github.event_name == 'push' || inputs.build_linux }}
+    runs-on: ubuntu-latest
+    container: ghcr.io/nextcloud/continuous-integration-client-appimage-qt6:client-appimage-el8-6.10.1-1  # TODO: Update to OpenList CI AppImage container
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set version suffix from tag or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            SUFFIX="$(echo "$TAG" | sed 's/^v//')"
+          elif [ -n "${{ inputs.version_suffix }}" ]; then
+            SUFFIX="${{ inputs.version_suffix }}"
+          else
+            SUFFIX="manual"
+          fi
+          echo "suffix=${SUFFIX}" >> "$GITHUB_OUTPUT"
+          echo "Version suffix: ${SUFFIX}"
+
+      - name: Configure, compile and package AppImage
+        id: build-appimage
+        run: |
+          BUILDNR=${GITHUB_RUN_ID} \
+          VERSION_SUFFIX=${{ steps.version.outputs.suffix }} \
+          BUILD_UPDATER=ON \
+          DESKTOP_CLIENT_ROOT=$(pwd) \
+          EXECUTABLE_NAME=openlist \
+          QT_BASE_DIR=/root/linux-gcc-x86_64 \
+          /bin/bash -c "./admin/linux/build-appimage.sh"
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: openlist-linux-appimage
+          path: ${{ steps.build-appimage.outputs.APPIMAGE_NAME }}
+          compression-level: 0
+          overwrite: true
+
+  # ── macOS DMG ───────────────────────────────────────────────────
+  macos-dmg:
+    name: macOS DMG
+    if: ${{ github.event_name == 'push' || inputs.build_macos }}
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      CRAFT_TARGET: macos-clang-arm64
+      CRAFT_MASTER_LOCATION: ${{ github.workspace }}/CraftMaster
+      CRAFT_MASTER_CONFIG: ${{ github.workspace }}/craftmaster.ini
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set version suffix from tag or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            SUFFIX="$(echo "$TAG" | sed 's/^v//')"
+          elif [ -n "${{ inputs.version_suffix }}" ]; then
+            SUFFIX="${{ inputs.version_suffix }}"
+          else
+            SUFFIX="manual"
+          fi
+          echo "suffix=${SUFFIX}"
+          echo "suffix=${SUFFIX}" >> "$GITHUB_OUTPUT"
+
+      - name: Select Xcode 16.3
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Install Homebrew dependencies
+        run: brew install homebrew/cask/inkscape
+
+      - name: Cache Craft directories
+        id: cache-craft
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ${{ env.CRAFT_MASTER_LOCATION }}
+            ${{ github.workspace }}/craft-clone
+            ${{ github.workspace }}/${{ env.CRAFT_TARGET }}
+          key: ${{ runner.os }}-craft-release-${{ hashFiles('craftmaster.ini') }}
+
+      - name: Set up Craft
+        if: steps.cache-craft.outputs.cache-hit != 'true'
+        run: |
+          git clone -q --depth=1 https://invent.kde.org/packaging/craftmaster.git ${{ env.CRAFT_MASTER_LOCATION }}
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c craft
+
+      - name: Add blueprint repositories
+        if: steps.cache-craft.outputs.cache-hit != 'true'
+        run: |
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo
+
+      - name: Install Craft dependencies
+        if: steps.cache-craft.outputs.cache-hit != 'true'
+        run: |
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps openlist-client  # TODO: Verify Craft package name
+
+      - name: Build openlist-client
+        run: |
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --options openlist-client.srcDir=${{ github.workspace }} --options openlist-client.buildFileProviderModule=True openlist-client  # TODO: Verify Craft package name
+
+      - name: Package DMG
+        run: |
+          BUILD_DIR="${{ github.workspace }}/${{ env.CRAFT_TARGET }}/build/openlist-client/work/build"
+          cd "$BUILD_DIR"
+          cpack -G DragNDrop
+
+      - name: Find and upload DMG
+        run: |
+          DMG=$(find "${{ github.workspace }}/${{ env.CRAFT_TARGET }}/build/openlist-client/work/build" -maxdepth 1 -name "*.dmg" | head -1)
+          if [ -z "$DMG" ]; then
+            # DMG may have been placed elsewhere by Craft
+            DMG=$(find "${{ github.workspace }}/${{ env.CRAFT_TARGET }}" -name "*.dmg" | head -1)
+          fi
+          echo "DMG found: ${DMG}"
+          echo "dmg_path=${DMG}" >> "$GITHUB_OUTPUT"
+          cp "$DMG" "${{ github.workspace }}/openlist-macos.dmg" || true
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: openlist-macos-dmg
+          path: ${{ github.workspace }}/openlist-macos.dmg
+          overwrite: true
+
+  # ── Windows MSI ─────────────────────────────────────────────────
+  windows-msi:
+    name: Windows MSI
+    if: ${{ github.event_name == 'push' || inputs.build_windows }}
+    runs-on: windows-2022
+    timeout-minutes: 90
+    env:
+      CRAFT_TARGET: windows-msvc2022_64-cl
+      CRAFT_MASTER_LOCATION: ${{ github.workspace }}\CraftMaster
+      CRAFT_MASTER_CONFIG: ${{ github.workspace }}\craftmaster.ini
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set version suffix from tag or input
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            $suffix = "${{ github.ref_name }}" -replace '^v', ''
+          } elseif ("${{ inputs.version_suffix }}") {
+            $suffix = "${{ inputs.version_suffix }}"
+          } else {
+            $suffix = "manual"
+          }
+          echo "suffix=${suffix}" >> $env:GITHUB_OUTPUT
+          Write-Host "Version suffix: ${suffix}"
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Install Craft Master with OpenList Client Deps
+        shell: pwsh
+        run: |
+          & cmd /C "git clone -q --depth=1 https://invent.kde.org/packaging/craftmaster.git ${{ env.CRAFT_MASTER_LOCATION }} 2>&1"
+
+          function craft() {
+              python "${{ env.CRAFT_MASTER_LOCATION }}\CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c $args
+              if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
+          }
+
+          craft --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo
+          craft --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo
+          craft craft
+          craft --install-deps openlist-client  # TODO: Verify Craft package name
+
+      - name: Build openlist-client
+        shell: pwsh
+        run: |
+          function craft() {
+              python "${{ env.CRAFT_MASTER_LOCATION }}\CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c $args
+              if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
+          }
+          craft --src-dir ${{ github.workspace }} openlist-client  # TODO: Verify Craft package name
+
+      - name: Package MSI
+        shell: pwsh
+        run: |
+          $buildDir = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\openlist-client\work\build"
+          cd $buildDir
+          & cpack -G WIX
+
+      - name: Find and stage MSI
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem -Path "${{ github.workspace }}\${{ env.CRAFT_TARGET }}" -Recurse -Filter "*.msi" | Select-Object -First 1
+          if ($msi) {
+            Write-Host "MSI found: $($msi.FullName)"
+            Copy-Item $msi.FullName "${{ github.workspace }}\openlist-windows.msi"
+          } else {
+            Write-Host "No MSI found, searching for exe..."
+            $exe = Get-ChildItem -Path "${{ github.workspace }}\${{ env.CRAFT_TARGET }}" -Recurse -Filter "*setup*.exe" | Select-Object -First 1
+            if ($exe) {
+              Write-Host "Installer found: $($exe.FullName)"
+              Copy-Item $exe.FullName "${{ github.workspace }}\openlist-windows-setup.exe"
+            }
+          }
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: openlist-windows-installer
+          path: |
+            ${{ github.workspace }}\openlist-windows.msi
+            ${{ github.workspace }}\openlist-windows-setup.exe
+          overwrite: true
+
+  # ── GitHub Release ──────────────────────────────────────────────
+  github-release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [linux-appimage, macos-dmg, windows-msi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@9589b46f2c19573e6f74b23bdfe5854867513eae # v7.0.1
+        with:
+          path: artifacts
+
+      - name: Display artifact structure
+        run: find artifacts -type f -ls
+
+      - name: Generate changelog URL
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            echo "url=https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@5e5d70e5f4c0efa6ae9dc99ac791e70e3bdc39a2 # v2.2.3
+        with:
+          name: OpenList Desktop Client ${{ github.ref_name }}
+          body: |
+            ## Downloads
+            - **Linux**: AppImage (x86_64)
+            - **macOS**: DMG (Apple Silicon)
+            - **Windows**: MSI Installer (x64)
+
+            See the [full changelog](${{ steps.changelog.outputs.url }}) for details.
+          files: |
+            artifacts/openlist-linux-appimage/*
+            artifacts/openlist-macos-dmg/*
+            artifacts/openlist-windows-installer/*
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          generate_release_notes: true
