@@ -29,7 +29,7 @@
 #include <QVariant>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(lcCsyncExclude, "nextcloud.csync.exclude", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCsyncExclude, "openlist.csync.exclude", QtInfoMsg)
 
 /** Expands C-like escape sequences (in place)
  */

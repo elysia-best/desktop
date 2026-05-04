@@ -12,7 +12,6 @@
 
 namespace OCC {
 
-class PropagateDownloadEncrypted;
 
 class BulkPropagatorDownloadJob : public PropagatorJob
 {
@@ -41,8 +40,6 @@ private:
     bool updateMetadata(const SyncFileItemPtr &item);
 
     QList<SyncFileItemPtr> _filesToDownload;
-
-    PropagateDownloadEncrypted *_downloadEncryptedHelper = nullptr;
 
     PropagateDirectory *_parentDirJob = nullptr;
 };

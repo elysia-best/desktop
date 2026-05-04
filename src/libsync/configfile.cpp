@@ -88,7 +88,7 @@ namespace OCC {
 
 namespace chrono = std::chrono;
 
-Q_LOGGING_CATEGORY(lcConfigFile, "nextcloud.sync.configfile", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcConfigFile, "openlist.sync.configfile", QtInfoMsg)
 
 QString ConfigFile::_confDir = {};
 QString ConfigFile::_discoveredLegacyConfigPath = {};
@@ -1067,7 +1067,7 @@ bool ConfigFile::monoIcons() const
     bool monoDefault = false; // On Mac we want bw by default
 #ifdef Q_OS_MACOS
     // OEM themes are not obliged to ship mono icons
-    monoDefault = QByteArrayLiteral("Nextcloud") == QByteArrayLiteral(APPLICATION_NAME);
+    monoDefault = QByteArrayLiteral("OpenList") == QByteArrayLiteral(APPLICATION_NAME);
 #endif
     return settings.value(QLatin1String(monoIconsC), monoDefault).toBool();
 }

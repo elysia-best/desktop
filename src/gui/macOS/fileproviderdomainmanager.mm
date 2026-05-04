@@ -24,7 +24,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcMacFileProviderDomainManager, "nextcloud.gui.macfileproviderdomainmanager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcMacFileProviderDomainManager, "openlist.gui.macfileproviderdomainmanager", QtInfoMsg)
 
 }
 

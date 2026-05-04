@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 version = 1
 SPDX-PackageName = "desktop"
-SPDX-PackageSupplier = "Nextcloud <info@nextcloud.com>"
-SPDX-PackageDownloadLocation = "https://github.com/nextcloud/desktop"
+SPDX-PackageSupplier = "OpenList Team <info@oplist.org>"
+SPDX-PackageDownloadLocation = "https://github.com/OpenListTeam/OpenList"
 
 [[annotations]]
 path = ["translations/*"]

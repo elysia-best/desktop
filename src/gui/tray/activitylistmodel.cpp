@@ -31,7 +31,7 @@ using namespace Qt::StringLiterals;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcActivity, "nextcloud.gui.activity", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcActivity, "openlist.gui.activity", QtInfoMsg)
 
 ActivityListModel::ActivityListModel(QObject *parent)
     : QAbstractListModel(parent)

@@ -21,7 +21,7 @@
 
 namespace OCC
 {
-Q_LOGGING_CATEGORY(lcAccountSetupCommandLineJob, "nextcloud.gui.accountsetupcommandlinejob", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccountSetupCommandLineJob, "openlist.gui.accountsetupcommandlinejob", QtInfoMsg)
 
 AccountSetupFromCommandLineJob::AccountSetupFromCommandLineJob(QString appPassword,
                                                                QString userId,

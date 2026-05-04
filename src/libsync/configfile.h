@@ -286,7 +286,7 @@ public:
     [[nodiscard]] bool isMigrationInProgress() const;
     [[nodiscard]] MigrationPhase migrationPhase() const;
     void setMigrationPhase(const MigrationPhase phase);
-    static constexpr char unbrandedAppName[] = "Nextcloud";
+    static constexpr char unbrandedAppName[] = "OpenList";
     static constexpr char legacyAppName[] = "Owncloud";
 
     static constexpr char clientVersionC[] = "clientVersion";

@@ -16,8 +16,8 @@ endif()
 
 # Icon switch: if branding is done, use the neutral state icons
 set(STATE_SUBDIR "")
-if(APPLICATION_NAME STREQUAL "Nextcloud")
-    set(STATE_SUBDIR "nextcloud/")
+if(APPLICATION_NAME STREQUAL "OpenList")
+    set(STATE_SUBDIR "openlist/")
 endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/theme.qrc.in ${CMAKE_SOURCE_DIR}/theme.qrc)
@@ -70,8 +70,6 @@ set(client_SRCS
     invalidfilenamedialog.cpp
     caseclashfilenamedialog.h
     caseclashfilenamedialog.cpp
-    callstatechecker.h
-    callstatechecker.cpp
     conflictdialog.h
     conflictdialog.cpp
     conflictsolver.h
@@ -116,14 +114,6 @@ set(client_SRCS
     logbrowser.cpp
     networksettings.h
     networksettings.cpp
-    ocsnavigationappsjob.h
-    ocsnavigationappsjob.cpp
-    ocsjob.h
-    ocsjob.cpp
-    ocssharejob.h
-    ocssharejob.cpp
-    ocsshareejob.h
-    ocsshareejob.cpp
     openfilemanager.h
     openfilemanager.cpp
     owncloudgui.h
@@ -138,8 +128,6 @@ set(client_SRCS
     settingsdialog.cpp
     sharemanager.h
     sharemanager.cpp
-    profilepagewidget.h
-    profilepagewidget.cpp
     sharee.h
     sharee.cpp
     sslbutton.h
@@ -174,16 +162,8 @@ set(client_SRCS
     elidedlabel.cpp
     iconutils.h
     iconutils.cpp
-    remotewipe.h
-    remotewipe.cpp
-    userstatusselectormodel.h
-    userstatusselectormodel.cpp
-    emojimodel.h
-    emojimodel.cpp
     syncconflictsmodel.h
     syncconflictsmodel.cpp
-    fileactivitylistmodel.h
-    fileactivitylistmodel.cpp
     filedetails/datefieldbackend.h
     filedetails/datefieldbackend.cpp
     filedetails/filedetails.h
@@ -523,11 +503,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib")
 endif()
 
-add_library(nextcloudCore STATIC ${final_src})
+add_library(openlistCore STATIC ${final_src})
 
-target_link_libraries(nextcloudCore
+target_link_libraries(openlistCore
   PUBLIC
-  Nextcloud::sync
+  OpenList::sync
   Qt::Widgets
   Qt::Svg
   Qt::Network
@@ -541,7 +521,7 @@ target_link_libraries(nextcloudCore
   )
 
 if(KF6GuiAddons_FOUND)
-  target_link_libraries(nextcloudCore
+  target_link_libraries(openlistCore
     PUBLIC
     KF6::GuiAddons
   )
@@ -560,16 +540,16 @@ foreach(FILE IN LISTS client_UI_SRCS)
 endforeach()
 
 if(WITH_WEBENGINE)
-    target_link_libraries(nextcloudCore PUBLIC Qt::WebEngineWidgets Qt::WebEngineCore)
+    target_link_libraries(openlistCore PUBLIC Qt::WebEngineWidgets Qt::WebEngineCore)
 endif()
 
-set_target_properties(nextcloudCore
+set_target_properties(openlistCore
   PROPERTIES
   AUTOUIC ON
   AUTOMOC ON
 )
 
-target_include_directories(nextcloudCore
+target_include_directories(openlistCore
   PUBLIC
   ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
   ${CMAKE_SOURCE_DIR}/src/3rdparty/kirigami
@@ -595,8 +575,8 @@ if(NOT BUILD_OWNCLOUD_OSX_BUNDLE)
     endif()
 
     # we may not add MACOSX_BUNDLE here, if not building one
-    add_executable(nextcloud WIN32 main.cpp ${client_version} ${client_manifest} ${APP_ICON})
-    set_target_properties(nextcloud PROPERTIES
+    add_executable(openlist WIN32 main.cpp ${client_version} ${client_manifest} ${APP_ICON})
+    set_target_properties(openlist PROPERTIES
       OUTPUT_NAME "${APPLICATION_EXECUTABLE}"
     )
 else()
@@ -604,13 +584,13 @@ else()
     set(MACOSX_BUNDLE_ICON_FILE "${APPLICATION_ICON_NAME}.icns")
 
     # we must add MACOSX_BUNDLE only if building a bundle
-    add_executable(nextcloud WIN32 MACOSX_BUNDLE main.cpp ${APP_ICON})
+    add_executable(openlist WIN32 MACOSX_BUNDLE main.cpp ${APP_ICON})
 
     if (BUILD_OWNCLOUD_OSX_BUNDLE)
-      set_target_properties(nextcloud PROPERTIES
+      set_target_properties(openlist PROPERTIES
         OUTPUT_NAME "${APPLICATION_NAME}")
     else()
-      set_target_properties(nextcloud PROPERTIES
+      set_target_properties(openlist PROPERTIES
         OUTPUT_NAME "${APPLICATION_EXECUTABLE}")
     endif()
 
@@ -631,21 +611,21 @@ endif()
 
 IF(BUILD_UPDATER)
     add_library(updater STATIC ${updater_SRCS})
-    target_link_libraries(updater Nextcloud::sync ${updater_DEPS} Qt::Widgets Qt::Svg Qt::Network Qt::Xml)
+    target_link_libraries(updater OpenList::sync ${updater_DEPS} Qt::Widgets Qt::Svg Qt::Network Qt::Xml)
     target_include_directories(updater PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
     set_target_properties(updater PROPERTIES AUTOMOC ON)
-    target_link_libraries(nextcloudCore PUBLIC updater)
+    target_link_libraries(openlistCore PUBLIC updater)
 endif()
 
-set_target_properties(nextcloud PROPERTIES
+set_target_properties(openlist PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
-target_link_libraries(nextcloud PRIVATE nextcloudCore)
+target_link_libraries(openlist PRIVATE openlistCore)
 
 if(TARGET PkgConfig::CLOUDPROVIDERS)
     message("Building with libcloudproviderssupport")
-    target_sources(nextcloudCore PRIVATE cloudproviders/cloudprovidermanager.cpp cloudproviders/cloudproviderwrapper.cpp)
+    target_sources(openlistCore PRIVATE cloudproviders/cloudprovidermanager.cpp cloudproviders/cloudproviderwrapper.cpp)
 
     string(TOLOWER "${APPLICATION_VENDOR}" DBUS_VENDOR)
     string(REGEX REPLACE "[^A-z0-9]" "" DBUS_VENDOR "${DBUS_VENDOR}")
@@ -657,8 +637,8 @@ if(TARGET PkgConfig::CLOUDPROVIDERS)
     set(LIBCLOUDPROVIDERS_DBUS_OBJECT_PATH "/${DBUS_PREFIX}/${DBUS_VENDOR}/${DBUS_APPLICATION_NAME}")
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cloudproviders/cloudproviderconfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/cloudproviderconfig.h)
-    target_compile_definitions(nextcloudCore PUBLIC -DWITH_LIBCLOUDPROVIDERS)
-    target_link_libraries(nextcloudCore
+    target_compile_definitions(openlistCore PUBLIC -DWITH_LIBCLOUDPROVIDERS)
+    target_link_libraries(openlistCore
       PRIVATE
       PkgConfig::CLOUDPROVIDERS
       PkgConfig::GLIB2
@@ -675,19 +655,19 @@ endif()
 ## handle DBUS for Fdo notifications
 if( UNIX AND NOT APPLE )
     find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} COMPONENTS DBus)
-    target_link_libraries(nextcloudCore PUBLIC Qt::DBus)
-    target_compile_definitions(nextcloudCore PUBLIC "USE_FDO_NOTIFICATIONS")
+    target_link_libraries(openlistCore PUBLIC Qt::DBus)
+    target_compile_definitions(openlistCore PUBLIC "USE_FDO_NOTIFICATIONS")
 endif()
 
 if (APPLE)
     if (BUILD_FILE_PROVIDER_MODULE)
-        target_link_libraries(nextcloudCore PUBLIC "-framework UserNotifications -framework FileProvider")
+        target_link_libraries(openlistCore PUBLIC "-framework UserNotifications -framework FileProvider")
     else()
-        target_link_libraries(nextcloudCore PUBLIC "-framework UserNotifications")
+        target_link_libraries(openlistCore PUBLIC "-framework UserNotifications")
     endif()
 endif()
 
-install(TARGETS nextcloud
+install(TARGETS openlist
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
@@ -695,7 +675,7 @@ install(TARGETS nextcloud
  )
 
 if (WIN32)
-    install(FILES $<TARGET_PDB_FILE:nextcloud> DESTINATION bin OPTIONAL)
+    install(FILES $<TARGET_PDB_FILE:openlist> DESTINATION bin OPTIONAL)
 endif()
 
 # FIXME: The following lines are dup in src/gui and src/cmd because it needs to be done after both are installed
@@ -709,7 +689,7 @@ if(BUILD_OWNCLOUD_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     # Setting BUILD_WITH_INSTALL_RPATH prevents CMake from separately tracking the build-tree
     # RPATH and then trying to delete it at cmake --install time (which would fail because
     # macdeployqt has already removed it).
-    set_target_properties(nextcloud PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+    set_target_properties(openlist PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 
     get_target_property (QT_QMAKE_EXECUTABLE Qt::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BIN_DIR "${QT_QMAKE_EXECUTABLE}" DIRECTORY)
@@ -730,12 +710,12 @@ if(BUILD_OWNCLOUD_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
         set(NO_STRIP "")
     endif()
 
-    add_custom_command(TARGET nextcloud POST_BUILD
+    add_custom_command(TARGET openlist POST_BUILD
         COMMAND "${MACDEPLOYQT_EXECUTABLE}"
-        "$<TARGET_FILE_DIR:nextcloud>/../.."
+        "$<TARGET_FILE_DIR:openlist>/../.."
         -qmldir=${CMAKE_SOURCE_DIR}/src/gui
         -always-overwrite
-        -executable="$<TARGET_FILE_DIR:nextcloud>/${cmd_NAME}"
+        -executable="$<TARGET_FILE_DIR:openlist>/${cmd_NAME}"
         -libpath=${MACDEPLOYQT_LIB_DIR}
         -libpath=${BIN_OUTPUT_DIRECTORY}
         ${NO_STRIP}

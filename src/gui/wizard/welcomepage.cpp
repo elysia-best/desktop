@@ -92,7 +92,7 @@ void WelcomePage::setupCreateAccountButton()
 #else // WITH_WEBENGINE
     connect(_ui->createAccountButton, &QPushButton::clicked, this, [this](bool /*checked*/) {
         _ocWizard->setRegistration(true);
-        Utility::openBrowser(QStringLiteral("https://nextcloud.com/register"));
+        Utility::openBrowser(QStringLiteral("https://github.com/OpenListTeam/OpenList"));
     });
 #endif // WITH_WEBENGINE
 }
@@ -101,7 +101,7 @@ void WelcomePage::setupHostYourOwnServerLabel()
 {
     _ui->hostYourOwnServerLabel->setText(tr("Host your own server"));
     _ui->hostYourOwnServerLabel->setAlignment(Qt::AlignCenter);
-    _ui->hostYourOwnServerLabel->setUrl(QUrl("https://docs.nextcloud.com/server/latest/admin_manual/installation/#installation"));
+    _ui->hostYourOwnServerLabel->setUrl(QUrl("https://doc.oplist.org"));
 }
 
 int WelcomePage::nextId() const

@@ -22,7 +22,7 @@ Q_DECLARE_METATYPE(QPersistentModelIndex)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFolderStatus, "nextcloud.gui.folder.model", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFolderStatus, "openlist.gui.folder.model", QtInfoMsg)
 
 static const char propertyParentIndexC[] = "oc_parentIndex";
 static const char propertyPermissionMap[] = "oc_permissionMap";
@@ -54,8 +54,6 @@ static bool sortByFolderHeader(const FolderStatusModel::SubFolderInfo &lhs, cons
 
 void FolderStatusModel::setAccountState(const AccountState *accountState)
 {
-    connect(accountState->account()->e2e(), &OCC::ClientSideEncryption::initializationFinished, this, &FolderStatusModel::e2eInitializationFinished);
-
     beginResetModel();
     _dirty = false;
     _folders.clear();
@@ -759,9 +757,7 @@ void FolderStatusModel::slotUpdateDirectories(const QStringList &list)
         newInfo._isEncrypted = encryptionMap.value(removeTrailingSlash(path)).toString() == "1"_L1;
         newInfo._path = relativePath;
 
-        newInfo._isNonDecryptable = newInfo.isEncrypted()
-            && _accountState->account()->e2e()
-            && !_accountState->account()->e2e()->isInitialized();
+        // e2e has been removed; nothing is non-decryptable
 
         SyncJournalFileRecord rec;
         if (!parentInfo->_folder->journalDb()->getFileRecordByE2eMangledName(removeTrailingSlash(relativePath), &rec)) {
@@ -1140,15 +1136,6 @@ void FolderStatusModel::slotSetProgress(const ProgressInfo &progress)
     }
     subFolderProgress->_overallPercent = qBound(0, overallPercent, 100);
     emit dataChanged(index(folderIndex), index(folderIndex), roles);
-}
-
-void FolderStatusModel::e2eInitializationFinished(bool isNewMnemonicGenerated)
-{
-    Q_UNUSED(isNewMnemonicGenerated);
-
-    for (int i = 0; i < _folders.count(); ++i) {
-        resetAndFetch(index(i));
-    }
 }
 
 void FolderStatusModel::slotFolderSyncStateChange(Folder *folder)

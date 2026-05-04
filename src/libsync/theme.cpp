@@ -29,7 +29,7 @@
 #include <windows.h>
 #endif
 
-#include "nextcloudtheme.h"
+#include "openlisttheme.h"
 
 #ifdef THEME_INCLUDE
 #define Mirall OCC // namespace hack to make old themes work
@@ -68,7 +68,7 @@ bool isWindows11OrGreater() {
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcTheme, "nextcloud.gui.theme", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcTheme, "openlist.gui.theme", QtInfoMsg)
 
 Theme *Theme::_instance = nullptr;
 
@@ -125,7 +125,7 @@ QString Theme::statusHeaderText(SyncResult::Status status) const
 
 bool Theme::isBranded() const
 {
-    return (appNameGUI() != QStringLiteral("Nextcloud") && NEXTCLOUD_DEV == 0);
+    return (appNameGUI() != QStringLiteral("OpenList") && OPENLIST_DEV == 0);
 }
 
 QString Theme::appNameGUI() const
@@ -474,7 +474,7 @@ QString Theme::helpUrl() const
 #ifdef APPLICATION_HELP_URL
     return QString::fromLatin1(APPLICATION_HELP_URL);
 #else
-    return QString::fromLatin1("https://docs.nextcloud.com/server/latest/user_manual/en/desktop/index.html");
+    return QString::fromLatin1("https://doc.oplist.org");
 #endif
 }
 
@@ -1023,7 +1023,7 @@ bool Theme::disableVirtualFilesSyncFolder() const
 
 QColor Theme::defaultColor()
 {
-    return QColor{NEXTCLOUD_BACKGROUND_COLOR};
+    return QColor{OPENLIST_BACKGROUND_COLOR};
 }
 
 void Theme::connectToPaletteSignal() const

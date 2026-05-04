@@ -26,7 +26,7 @@
 #include <QLoggingCategory>
 #include <QFile>
 
-Q_LOGGING_CATEGORY(lcCSyncVIOLocal, "nextcloud.sync.csync.vio_local", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCSyncVIOLocal, "openlist.sync.csync.vio_local", QtInfoMsg)
 
 /*
  * directory functions

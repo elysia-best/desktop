@@ -53,7 +53,7 @@ constexpr auto versionC = "version";
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFolder, "nextcloud.gui.folder", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFolder, "openlist.gui.folder", QtInfoMsg)
 
 Folder::Folder(const FolderDefinition &definition,
     AccountState *accountState, std::unique_ptr<Vfs> vfs,

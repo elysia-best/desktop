@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2025 OpenList Team
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 name: macOS CI
@@ -66,18 +66,18 @@ jobs:
       - name: Add required blueprint repositories
         if: steps.cache-craft-restore.outputs.cache-hit != 'true'
         run: |
-          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"
-          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo (https://github.com/openlist/craft-blueprints-kde.git)
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo (https://github.com/openlist/desktop-client-blueprints.git)
 
       - name: Setup Craft
         if: steps.cache-craft-restore.outputs.cache-hit != 'true'
         run: |
           python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c craft
 
-      - name: Install Craft Nextcloud client dependencies
+      - name: Install Craft OpenList client dependencies
         if: steps.cache-craft-restore.outputs.cache-hit != 'true'
         run: |
-          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps nextcloud-client
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps openlist-client  # TODO: Verify Craft package name openlist-client exists
 
       - name: Cache Craft directories
         if: steps.cache-craft-restore.outputs.cache-hit != 'true'

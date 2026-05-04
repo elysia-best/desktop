@@ -14,7 +14,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcClientProxy, "nextcloud.sync.clientproxy", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcClientProxy, "openlist.sync.clientproxy", QtInfoMsg)
 
 ClientProxy::ClientProxy(QObject *parent)
     : QObject(parent)

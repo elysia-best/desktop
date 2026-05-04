@@ -21,8 +21,6 @@
 #include "configfile.h"
 #include "discovery.h"
 #include "common/vfs.h"
-#include "clientsideencryption.h"
-#include "clientsideencryptionjobs.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -53,7 +51,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcEngine, "nextcloud.sync.engine", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcEngine, "openlist.sync.engine", QtInfoMsg)
 
 bool SyncEngine::s_anySyncRunning = false;
 
@@ -498,23 +496,6 @@ void SyncEngine::startSync()
             return;
         }
 
-        const auto e2EeLockedFolders = _journal->e2EeLockedFolders();
-
-        if (!e2EeLockedFolders.isEmpty()) {
-            for (const auto &e2EeLockedFolder : e2EeLockedFolders) {
-                const auto folderId = e2EeLockedFolder.first;
-                qCInfo(lcEngine()) << "start unlock job for folderId:" << folderId;
-                const auto folderToken = EncryptionHelper::decryptStringAsymmetric(_account->e2e()->getCertificateInformation(), _account->e2e()->paddingMode(), *_account->e2e(), e2EeLockedFolder.second);
-                if (!folderToken) {
-                    qCWarning(lcEngine()) << "decrypt failed";
-                    return;
-                }
-                // TODO: We need to rollback changes done to metadata in case we have an active lock, this needs to be implemented on the server first
-                const auto unlockJob = new OCC::UnlockEncryptFolderApiJob(_account, folderId, *folderToken, _journal, this);
-                unlockJob->setShouldRollbackMetadataChanges(true);
-                unlockJob->start();
-            }
-        }
     }
 
     if (s_anySyncRunning || _syncRunning) {

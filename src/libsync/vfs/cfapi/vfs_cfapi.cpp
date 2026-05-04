@@ -22,7 +22,7 @@
 
 #include <QCoreApplication>
 
-Q_LOGGING_CATEGORY(lcCfApi, "nextcloud.sync.vfs.cfapi", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCfApi, "openlist.sync.vfs.cfapi", QtInfoMsg)
 
 namespace cfapi {
 using namespace OCC::CfApiWrapper;
@@ -490,8 +490,6 @@ void VfsCfApi::scheduleHydrationJob(const QString &requestId, const QString &fol
     job->setJournal(params().journal);
     job->setRequestId(requestId);
     job->setFolderPath(folderPath);
-    job->setIsEncryptedFile(record.isE2eEncrypted());
-    job->setE2eMangledName(record._e2eMangledName);
     job->setFileTotalSize(record._fileSize);
     connect(job, &HydrationJob::finished, this, &VfsCfApi::onHydrationJobFinished);
     d->hydrationJobs << job;

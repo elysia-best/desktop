@@ -463,13 +463,12 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    auto *job = new JsonApiJob(account, QLatin1String("ocs/v1.php/cloud/capabilities"));
+    auto *job = new JsonApiJob(account, QLatin1String("/api/public/settings"));
     QObject::connect(job, &JsonApiJob::jsonReceived, [&](const QJsonDocument &json) {
-        auto caps = json.object().value("ocs").toObject().value("data").toObject().value("capabilities").toObject();
-        qDebug() << "Server capabilities" << caps;
-        account->setCapabilities(caps.toVariantMap());
-        // see ConnectionValidator::slotCapabilitiesRecieved: only set server version if not empty
-        QString serverVersion = caps["core"].toObject()["status"].toObject()["version"].toString();
+        auto settings = json.object().toVariantMap();
+        qDebug() << "OpenList server settings" << settings;
+        account->setCapabilities(settings);
+        QString serverVersion = settings.value(QStringLiteral("version")).toString();
         if (!serverVersion.isEmpty()) {
             account->setServerVersion(serverVersion);
         }
@@ -483,11 +482,11 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    job = new JsonApiJob(account, QLatin1String("ocs/v1.php/cloud/user"));
+    job = new JsonApiJob(account, QLatin1String("/api/me"));
     QObject::connect(job, &JsonApiJob::jsonReceived, [&](const QJsonDocument &json) {
-        const QJsonObject data = json.object().value("ocs").toObject().value("data").toObject();
-        account->setDavUser(data.value("id").toString());
-        account->setDavDisplayName(data.value("display-name").toString());
+        const QJsonObject data = json.object();
+        account->setDavUser(data.value("username").toString());
+        account->setDavDisplayName(data.value("display_name").toString());
         loop.quit();
     });
     job->start();

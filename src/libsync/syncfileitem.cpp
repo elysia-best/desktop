@@ -18,7 +18,7 @@ using namespace Qt::StringLiterals;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFileItem, "nextcloud.sync.fileitem", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFileItem, "openlist.sync.fileitem", QtInfoMsg)
 
 namespace EncryptionStatusEnums {
 

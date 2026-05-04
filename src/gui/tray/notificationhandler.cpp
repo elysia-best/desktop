@@ -18,7 +18,7 @@ using namespace Qt::StringLiterals;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcServerNotification, "nextcloud.gui.servernotification", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcServerNotification, "openlist.gui.servernotification", QtInfoMsg)
 
 const QString notificationsPath = QLatin1String("ocs/v2.php/apps/notifications/api/v2/notifications");
 const char propertyAccountStateC[] = "oc_account_state";

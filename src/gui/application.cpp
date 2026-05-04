@@ -19,7 +19,6 @@
 #include "folder.h"
 #include "folderman.h"
 #include "logger.h"
-#include "pushnotifications.h"
 #include "socketapi/socketapi.h"
 #include "theme.h"
 
@@ -63,7 +62,7 @@ class QSocket;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcApplication, "nextcloud.gui.application", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcApplication, "openlist.gui.application", QtInfoMsg)
 
 namespace {
 
@@ -801,7 +800,7 @@ void Application::setupLogging()
         logger->setLogDir(_logDir.isEmpty() ? ConfigFile().logDir() : _logDir);
     }
     logger->setLogExpire(_logExpire > 0 ? _logExpire : ConfigFile().logExpire());
-#if defined NEXTCLOUD_DEV && NEXTCLOUD_DEV
+#if defined OPENLIST_DEV && OPENLIST_DEV
     logger->setLogFlush(true);
     logger->setLogDebug(true);
 #else
@@ -817,7 +816,7 @@ void Application::setupLogging()
     logger->setLogDebug(true);
 #endif
 
-    logger->enterNextLogFile(QStringLiteral("nextcloud.log"), OCC::Logger::LogType::Log);
+    logger->enterNextLogFile(QStringLiteral("openlist.log"), OCC::Logger::LogType::Log);
     logger->enterNextLogFile(QStringLiteral("permanent_delete.log"), OCC::Logger::LogType::DeleteLog);
 
     qCInfo(lcApplication) << "##################" << _theme->appName()

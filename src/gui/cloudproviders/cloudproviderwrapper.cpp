@@ -21,7 +21,7 @@
 
 using namespace OCC;
 
-Q_LOGGING_CATEGORY(lcNextcloudCloudProviderIntegration, "nextcloud.cloudprovider.integration", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcNextcloudCloudProviderIntegration, "openlist.cloudprovider.integration", QtInfoMsg)
 
 GSimpleActionGroup *actionGroup = nullptr;
 

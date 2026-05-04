@@ -30,12 +30,10 @@
 #include "creds/httpcredentialsgui.h"
 #include "tooltipupdater.h"
 #include "filesystem.h"
-#include "encryptfolderjob.h"
 #include "syncresult.h"
 #include "ignorelisttablewidget.h"
 #include "wizard/owncloudwizard.h"
 #include "networksettings.h"
-#include "ui_mnemonicdialog.h"
 
 #include <cmath>
 
@@ -83,62 +81,13 @@ using namespace Qt::StringLiterals;
 namespace {
 constexpr auto propertyFolder = "folder";
 constexpr auto propertyPath = "path";
-constexpr auto e2eUiActionIdKey = "id";
-constexpr auto e2EeUiActionSetupEncryptionId = "setup_encryption";
-constexpr auto e2EeUiActionForgetEncryptionId = "forget_encryption";
-constexpr auto e2EeUiActionDisplayMnemonicId = "display_mnemonic";
-constexpr auto e2EeUiActionMigrateCertificateId = "migrate_certificate";
 }
 
 namespace OCC {
 
 class AccountSettings;
 
-Q_LOGGING_CATEGORY(lcAccountSettings, "nextcloud.gui.account.settings", QtInfoMsg)
-
-void showEnableE2eeWithVirtualFilesWarningDialog(std::function<void(void)> onAccept)
-{
-    const auto messageBox = new QMessageBox;
-    messageBox->setAttribute(Qt::WA_DeleteOnClose);
-    messageBox->setText(AccountSettings::tr("End-to-end Encryption with Virtual Files"));
-    messageBox->setInformativeText(AccountSettings::tr("You seem to have the Virtual Files feature enabled on this folder. "
-                                                       "At the moment, it is not possible to implicitly download virtual files that are "
-                                                       "end-to-end encrypted. To get the best experience with virtual files and "
-                                                       "end-to-end encryption, make sure the encrypted folder is marked with "
-                                                       "\"Make always available locally\"."));
-    messageBox->setIcon(QMessageBox::Warning);
-    const auto dontEncryptButton = messageBox->addButton(QMessageBox::StandardButton::Cancel);
-    Q_ASSERT(dontEncryptButton);
-    dontEncryptButton->setText(AccountSettings::tr("Do not encrypt folder"));
-    const auto encryptButton = messageBox->addButton(QMessageBox::StandardButton::Ok);
-    Q_ASSERT(encryptButton);
-    encryptButton->setText(AccountSettings::tr("Encrypt folder"));
-    QObject::connect(messageBox, &QMessageBox::accepted, onAccept);
-
-    messageBox->open();
-}
-
-void showEnableE2eeWarningDialog(std::function<void(void)> onAccept)
-{
-    const auto messageBox = new QMessageBox;
-    messageBox->setAttribute(Qt::WA_DeleteOnClose);
-    messageBox->setText(AccountSettings::tr("End-to-end Encryption"));
-    messageBox->setTextFormat(Qt::RichText);
-    messageBox->setInformativeText(
-        AccountSettings::tr("This will encrypt your folder and all files within it. "
-                            "These files will no longer be accessible without your encryption mnemonic key. "
-                            "\n<b>This process is not reversible. Are you sure you want to proceed?</b>"));
-    messageBox->setIcon(QMessageBox::Warning);
-    const auto dontEncryptButton = messageBox->addButton(QMessageBox::StandardButton::Cancel);
-    Q_ASSERT(dontEncryptButton);
-    dontEncryptButton->setText(AccountSettings::tr("Do not encrypt folder"));
-    const auto encryptButton = messageBox->addButton(QMessageBox::StandardButton::Ok);
-    Q_ASSERT(encryptButton);
-    encryptButton->setText(AccountSettings::tr("Encrypt folder"));
-    QObject::connect(messageBox, &QMessageBox::accepted, onAccept);
-
-    messageBox->open();
-}
+Q_LOGGING_CATEGORY(lcAccountSettings, "openlist.gui.account.settings", QtInfoMsg)
 
 /**
  * Adjusts the mouse cursor based on the region it is on over the folder tree view.
@@ -301,17 +250,7 @@ AccountSettings::AccountSettings(AccountState *accountState, QWidget *parent)
     connect(FolderMan::instance(), &FolderMan::folderListChanged, _model, &FolderStatusModel::resetFolders);
     connect(this, &AccountSettings::folderChanged, _model, &FolderStatusModel::resetFolders);
 
-    // Connect E2E stuff
-    if (_accountState->isConnected()) {
-        setupE2eEncryption();
-    } else {
-        _ui->encryptionMessageLabel->setText(tr("End-to-end encryption has not been initialized on this account."));
-    }
-    _ui->encryptionMessageLabel->setTextFormat(Qt::RichText);
-    _ui->encryptionMessageLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    _ui->encryptionMessageLabel->setOpenExternalLinks(true);
-    _ui->encryptionMessageButtonsLayout->addStretch();
-    setEncryptionMessageIcon({});
+    _ui->encryptionMessage->hide();
 
     _ui->connectLabel->setText(tr("No account configured."));
 
@@ -322,75 +261,6 @@ AccountSettings::AccountSettings(AccountState *accountState, QWidget *parent)
         this, &AccountSettings::slotUpdateQuota);
 
     customizeStyle();
-
-    connect(_accountState->account()->e2e(), &ClientSideEncryption::startingDiscoveryEncryptionUsbToken,
-            Systray::instance(), &Systray::createEncryptionTokenDiscoveryDialog);
-    connect(_accountState->account()->e2e(), &ClientSideEncryption::finishedDiscoveryEncryptionUsbToken,
-            Systray::instance(), &Systray::destroyEncryptionTokenDiscoveryDialog);
-}
-
-void AccountSettings::slotE2eEncryptionMnemonicReady()
-{
-    const auto actionDisableEncryption = addActionToEncryptionMessage(tr("Forget encryption setup"), e2EeUiActionForgetEncryptionId);
-    connect(actionDisableEncryption, &QAction::triggered, this, [this] {
-        forgetEncryptionOnDeviceForAccount(_accountState->account());
-    });
-
-    if (_accountState->account()->e2e()->userCertificateNeedsMigration()) {
-        slotE2eEncryptionCertificateNeedMigration();
-    }
-
-    if (!_accountState->account()->e2e()->getMnemonic().isEmpty()) {
-        const auto actionDisplayMnemonic = addActionToEncryptionMessage(tr("Display mnemonic"), e2EeUiActionDisplayMnemonicId);
-        connect(actionDisplayMnemonic, &QAction::triggered, this, [this]() {
-            displayMnemonic(_accountState->account()->e2e()->getMnemonic());
-        });
-    }
-
-    _ui->encryptionMessageLabel->setText(tr("Encryption is set-up. Remember to <b>Encrypt</b> a folder to end-to-end encrypt any new files added to it."));
-    setEncryptionMessageIcon(Theme::createColorAwareIcon(QStringLiteral(":/client/theme/lock.svg")));
-    _ui->encryptionMessage->show();
-}
-
-void AccountSettings::slotE2eEncryptionGenerateKeys()
-{
-    connect(_accountState->account()->e2e(), &ClientSideEncryption::initializationFinished, this, &AccountSettings::slotE2eEncryptionInitializationFinished);
-    _accountState->account()->setE2eEncryptionKeysGenerationAllowed(true);
-    _accountState->account()->setAskUserForMnemonic(true);
-    _accountState->account()->e2e()->initialize(this);
-}
-
-void AccountSettings::slotE2eEncryptionInitializationFinished(bool isNewMnemonicGenerated)
-{
-    disconnect(_accountState->account()->e2e(), &ClientSideEncryption::initializationFinished, this, &AccountSettings::slotE2eEncryptionInitializationFinished);
-    if (_accountState->account()->e2e()->isInitialized()) {
-        removeActionFromEncryptionMessage(e2EeUiActionSetupEncryptionId);
-        slotE2eEncryptionMnemonicReady();
-        if (isNewMnemonicGenerated) {
-            displayMnemonic(_accountState->account()->e2e()->getMnemonic());
-        }
-        Q_EMIT _accountState->account()->wantsFoldersSynced();
-    }
-    _accountState->account()->setAskUserForMnemonic(false);
-}
-
-void AccountSettings::slotEncryptFolderFinished(int status)
-{
-    qCInfo(lcAccountSettings) << "Current folder encryption status code:" << status;
-    auto job = qobject_cast<EncryptFolderJob*>(sender());
-    Q_ASSERT(job);
-    if (!job->errorString().isEmpty()) {
-        QMessageBox::warning(nullptr, tr("Warning"), job->errorString());
-    }
-
-    const auto folder = job->property(propertyFolder).value<Folder *>();
-    Q_ASSERT(folder);
-    const auto path = job->property(propertyPath).toString();
-    const auto index = _model->indexForPath(folder, path);
-    Q_ASSERT(index.isValid());
-    _model->resetAndFetch(index.parent());
-
-    job->deleteLater();
 }
 
 QString AccountSettings::selectedFolderAlias() const
@@ -421,96 +291,6 @@ void AccountSettings::doExpand()
             _ui->_folderList->setExpanded(idx, true);
         }
     }
-}
-
-bool AccountSettings::canEncryptOrDecrypt(const FolderStatusModel::SubFolderInfo *info)
-{
-    if (const auto folderSyncStatus = info->_folder->syncResult().status(); info->_fileId.isEmpty()) {
-        auto message = tr("Please wait for the folder to sync before trying to encrypt it.");
-        if (folderSyncStatus == SyncResult::Status::Problem) {
-            message = tr("The folder has a minor sync problem. Encryption of this folder will be possible once it has synced successfully");
-        } else if (folderSyncStatus == SyncResult::Status::Error) {
-            message = tr("The folder has a sync error. Encryption of this folder will be possible once it has synced successfully");
-        }
-
-        QMessageBox msgBox;
-        msgBox.setText(message);
-        msgBox.exec();
-        return false;
-    }
-
-    if (!_accountState->account()->e2e() || !_accountState->account()->e2e()->isInitialized()) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("You cannot encrypt this folder because the end-to-end encryption is not set-up yet on this device.\n"
-                          "Would you like to do this now?"));
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        const auto ret = msgBox.exec();
-
-        switch (ret) {
-        case QMessageBox::Ok:
-            slotE2eEncryptionGenerateKeys();
-            break;
-        case QMessageBox::Cancel:
-        default:
-            break;
-        }
-
-        return false;
-    }
-
-    // for some reason the actual folder in disk is info->_folder->path + info->_path.
-    QDir folderPath(info->_folder->path() + info->_path);
-    folderPath.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
-
-    if (folderPath.count() != 0) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("You cannot encrypt a folder with contents, please remove the files.\n"
-                       "Wait for the new sync, then encrypt it."));
-        msgBox.exec();
-        return false;
-    }
-    return true;
-}
-
-void AccountSettings::slotMarkSubfolderEncrypted(FolderStatusModel::SubFolderInfo* folderInfo)
-{
-    if (!canEncryptOrDecrypt(folderInfo)) {
-        return;
-    }
-
-    const auto folder = folderInfo->_folder;
-    Q_ASSERT(folder);
-
-    const auto folderAlias = folder->alias();
-    const auto path = folderInfo->_path;
-    const auto fileId = folderInfo->_fileId;
-    const auto encryptFolder = [this, fileId, path, folderAlias] {
-        const auto folder = FolderMan::instance()->folder(folderAlias);
-        if (!folder) {
-            qCWarning(lcAccountSettings) << "Could not encrypt folder because folder" << folderAlias << "does not exist anymore";
-            QMessageBox::warning(nullptr, tr("Encryption failed"), tr("Could not encrypt folder because the folder does not exist anymore"));
-            return;
-        }
-
-        // Folder info have directory paths in Foo/Bar/ convention...
-        Q_ASSERT(!path.startsWith('/') && path.endsWith('/'));
-        // But EncryptFolderJob expects directory path Foo/Bar convention
-        const auto choppedPath = path.chopped(1);
-        auto job = new OCC::EncryptFolderJob(accountsState()->account(), folder->journalDb(), choppedPath, choppedPath, folder->remotePath(), fileId);
-        job->setParent(this);
-        job->setProperty(propertyFolder, QVariant::fromValue(folder));
-        job->setProperty(propertyPath, QVariant::fromValue(path));
-        connect(job, &OCC::EncryptFolderJob::finished, this, &AccountSettings::slotEncryptFolderFinished);
-        job->start();
-    };
-
-    if (folder->virtualFilesEnabled() && folder->vfs().mode() == Vfs::WindowsCfApi) {
-        showEnableE2eeWithVirtualFilesWarningDialog(encryptFolder);
-        return;
-    }
-
-    showEnableE2eeWarningDialog(encryptFolder);
 }
 
 void AccountSettings::slotEditCurrentIgnoredFiles()
@@ -620,23 +400,6 @@ void AccountSettings::slotSubfolderContextMenuRequested(const QModelIndex& index
     }
     const auto info = _model->infoForIndex(index);
     const auto acc = _accountState->account();
-
-    if (acc->capabilities().clientSideEncryptionAvailable()) {
-        // Verify if the folder is empty before attempting to encrypt.
-
-        const auto isEncrypted = info->isEncrypted();
-        const auto isParentEncrypted = _model->isAnyAncestorEncrypted(index);
-        const auto isTopFolder = index.parent().isValid() && !index.parent().parent().isValid();
-        const auto isExternal = info->_isExternal;
-
-        if (!isEncrypted && !isParentEncrypted && !isExternal && isTopFolder) {
-            ac = menu.addAction(tr("Encrypt"));
-            connect(ac, &QAction::triggered, [this, info] { slotMarkSubfolderEncrypted(info); });
-        } else {
-            // Ignore decrypting for now since it only works with an empty folder
-            // connect(ac, &QAction::triggered, [this, &info] { slotMarkSubfolderDecrypted(info); });
-        }
-    }
 
     ac = menu.addAction(tr("Edit Ignored Files"));
     connect(ac, &QAction::triggered, this, &AccountSettings::slotEditCurrentLocalIgnoredFiles);
@@ -1191,72 +954,6 @@ void AccountSettings::slotSetSubFolderAvailability(Folder *folder, const QString
     folder->scheduleThisFolderSoon();
 }
 
-void AccountSettings::displayMnemonic(const QString &mnemonic)
-{
-    QDialog widget;
-    Ui_Dialog ui{};
-    ui.setupUi(&widget);
-    widget.setWindowTitle(tr("End-to-end encryption mnemonic"));
-    ui.label->setText(
-        tr("To protect your Cryptographic Identity, we encrypt it with a mnemonic of 12 dictionary words. "
-           "Please note it down and keep it safe. "
-           "You will need it to set-up the synchronization of encrypted folders on your other devices."));
-    QFont monoFont(QStringLiteral("Monospace"));
-    monoFont.setStyleHint(QFont::TypeWriter);
-    ui.lineEdit->setFont(monoFont);
-    ui.lineEdit->setText(mnemonic);
-    ui.lineEdit->setReadOnly(true);
-
-    ui.lineEdit->setStyleSheet(QStringLiteral("QLineEdit{ color: black; background: lightgrey; border-style: inset;}"));
-
-    ui.lineEdit->focusWidget();
-    ui.lineEdit->selectAll();
-    ui.lineEdit->setAlignment(Qt::AlignCenter);
-
-    const QFont font(QStringLiteral(""), 0);
-    QFontMetrics fm(font);
-    ui.lineEdit->setFixedWidth(fm.horizontalAdvance(mnemonic));
-    widget.resize(widget.sizeHint());
-    widget.exec();
-}
-
-void AccountSettings::forgetEncryptionOnDeviceForAccount(const AccountPtr &account) const
-{
-    QMessageBox dialog;
-    dialog.setWindowTitle(tr("Forget the end-to-end encryption on this device"));
-    dialog.setText(tr("Do you want to forget the end-to-end encryption settings for %1 on this device?").arg(account->davUser()));
-    dialog.setInformativeText(tr("Forgetting end-to-end encryption will remove the sensitive data and all the encrypted files from this device."
-                                 "<br>"
-                                 "However, the encrypted files will remain on the server and all your other devices, if configured."));
-    dialog.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    dialog.setDefaultButton(QMessageBox::Ok);
-    dialog.adjustSize();
-
-    const auto ret = dialog.exec();
-    switch(ret) {
-    case QMessageBox::Ok:
-        connect(account->e2e(), &ClientSideEncryption::sensitiveDataForgotten,
-                this, &AccountSettings::forgetE2eEncryption);
-        account->e2e()->forgetSensitiveData();
-        break;
-    case QMessageBox::Cancel:
-        break;
-    Q_UNREACHABLE();
-    }
-}
-
-void AccountSettings::migrateCertificateForAccount(const AccountPtr &account)
-{
-    const auto &allActions = _ui->encryptionMessage->actions();
-    for (const auto action : allActions) {
-        _ui->encryptionMessage->removeAction(action);
-    }
-    updateEncryptionMessageActions();
-
-    account->e2e()->migrateCertificate();
-    slotE2eEncryptionGenerateKeys();
-}
-
 void AccountSettings::showConnectionLabel(const QString &message, QStringList errors)
 {
     const auto errStyle = QLatin1String("color:#ffffff; background-color:#bb4d4d;padding:5px;"
@@ -1483,23 +1180,6 @@ void AccountSettings::slotAccountStateChanged()
     // sync user interface buttons.
     refreshSelectiveSyncStatus();
 
-    if (state == AccountState::State::Connected) {
-        checkClientSideEncryptionState();
-    }
-}
-
-void AccountSettings::checkClientSideEncryptionState()
-{
-    /* TODO: We should probably do something better here.
-     * Verify if the user has a private key already uploaded to the server,
-     * if it has, do not offer to create one.
-     */
-    qCInfo(lcAccountSettings) << "Account" << accountsState()->account()->displayName()
-        << "Client Side Encryption" << accountsState()->account()->capabilities().clientSideEncryptionAvailable();
-
-    if (_accountState->account()->capabilities().clientSideEncryptionAvailable()) {
-        _ui->encryptionMessage->show();
-    }
 }
 
 void AccountSettings::slotLinkActivated(const QString &link)
@@ -1600,78 +1280,6 @@ void AccountSettings::slotSelectiveSyncChanged(const QModelIndex &topLeft,
             }
         });
     }
-}
-
-void AccountSettings::slotPossiblyUnblacklistE2EeFoldersAndRestartSync()
-{
-    if (!_accountState->account()->e2e()->isInitialized()) {
-        return;
-    }
-
-    disconnect(_accountState->account()->e2e(), &ClientSideEncryption::initializationFinished, this, &AccountSettings::slotPossiblyUnblacklistE2EeFoldersAndRestartSync);
-
-    for (const auto folder : FolderMan::instance()->map()) {
-        if (folder->accountState() != _accountState) {
-            continue;
-        }
-        bool ok = false;
-        const auto foldersToRemoveFromBlacklist = folder->journalDb()->getSelectiveSyncList(SyncJournalDb::SelectiveSyncE2eFoldersToRemoveFromBlacklist, &ok);
-        if (foldersToRemoveFromBlacklist.isEmpty()) {
-            continue;
-        }
-        auto blackList = folder->journalDb()->getSelectiveSyncList(SyncJournalDb::SelectiveSyncBlackList, &ok);
-        const auto blackListSize = blackList.size();
-        if (blackListSize == 0) {
-            continue;
-        }
-        for (const auto &pathToRemoveFromBlackList : foldersToRemoveFromBlacklist) {
-            blackList.removeAll(pathToRemoveFromBlackList);
-        }
-        if (blackList.size() != blackListSize) {
-            if (folder->isSyncRunning()) {
-                folderTerminateSyncAndUpdateBlackList(blackList, folder, foldersToRemoveFromBlacklist);
-                return;
-            }
-            updateBlackListAndScheduleFolderSync(blackList, folder, foldersToRemoveFromBlacklist);
-        }
-    }
-}
-
-void AccountSettings::slotE2eEncryptionCertificateNeedMigration()
-{
-    const auto actionMigrateCertificate = addActionToEncryptionMessage(tr("Migrate certificate to a new one"), e2EeUiActionMigrateCertificateId);
-    connect(actionMigrateCertificate, &QAction::triggered, this, [this] {
-        migrateCertificateForAccount(_accountState->account());
-    });
-}
-
-void AccountSettings::updateBlackListAndScheduleFolderSync(const QStringList &blackList, OCC::Folder *folder, const QStringList &foldersToRemoveFromBlacklist) const
-{
-    folder->journalDb()->setSelectiveSyncList(SyncJournalDb::SelectiveSyncBlackList, blackList);
-    folder->journalDb()->setSelectiveSyncList(SyncJournalDb::SelectiveSyncE2eFoldersToRemoveFromBlacklist, {});
-    for (const auto &pathToRemoteDiscover : foldersToRemoveFromBlacklist) {
-        folder->journalDb()->schedulePathForRemoteDiscovery(pathToRemoteDiscover);
-    }
-    FolderMan::instance()->scheduleFolder(folder);
-}
-
-void AccountSettings::folderTerminateSyncAndUpdateBlackList(const QStringList &blackList, OCC::Folder *folder, const QStringList &foldersToRemoveFromBlacklist)
-{
-    if (_folderConnections.contains(folder->alias())) {
-        qCWarning(lcAccountSettings) << "Folder " << folder->alias() << "is already terminating the sync.";
-        return;
-    }
-    // in case sync is already running - terminate it and start a new one
-    const QMetaObject::Connection syncTerminatedConnection = connect(folder, &Folder::syncFinished, this, [this, blackList, folder, foldersToRemoveFromBlacklist]() {
-        const auto foundConnectionIt = _folderConnections.find(folder->alias());
-        if (foundConnectionIt != _folderConnections.end()) {
-            disconnect(*foundConnectionIt);
-            _folderConnections.erase(foundConnectionIt);
-        }
-        updateBlackListAndScheduleFolderSync(blackList, folder, foldersToRemoveFromBlacklist);
-    });
-    _folderConnections.insert(folder->alias(), syncTerminatedConnection);
-    folder->slotTerminateSync();
 }
 
 void AccountSettings::refreshSelectiveSyncStatus()
@@ -1781,144 +1389,6 @@ void AccountSettings::customizeStyle()
     auto msg = _ui->connectLabel->text();
     Theme::replaceLinkColorStringBackgroundAware(msg);
     _ui->connectLabel->setText(msg);
-}
-
-void AccountSettings::setupE2eEncryption()
-{
-    connect(_accountState->account()->e2e(), &ClientSideEncryption::initializationFinished, this, &AccountSettings::slotPossiblyUnblacklistE2EeFoldersAndRestartSync);
-
-    if (_accountState->account()->e2e()->isInitialized()) {
-        slotE2eEncryptionMnemonicReady();
-    } else {
-        setupE2eEncryptionMessage();
-
-        connect(_accountState->account()->e2e(), &ClientSideEncryption::initializationFinished, this, [this] {
-            if (!_accountState->account()->e2e()->getPublicKey().isNull()) {
-                _ui->encryptionMessageLabel->setText(tr("End-to-end encryption has been initialized on this account with another device."
-                                                        "<br>"
-                                                        "Enter the unique mnemonic to have the encrypted folders synchronize on this device as well."));
-            }
-        });
-        _accountState->account()->setE2eEncryptionKeysGenerationAllowed(false);
-        _accountState->account()->e2e()->initialize(this);
-    }
-}
-
-void AccountSettings::forgetE2eEncryption()
-{
-    const auto &allActions = _ui->encryptionMessage->actions();
-    for (const auto action : allActions) {
-        _ui->encryptionMessage->removeAction(action);
-    }
-    updateEncryptionMessageActions();
-    _ui->encryptionMessageLabel->setText({});
-    setEncryptionMessageIcon({});
-    setupE2eEncryptionMessage();
-    checkClientSideEncryptionState();
-
-    const auto account = _accountState->account();
-    if (!account->e2e()->isInitialized()) {
-        FolderMan::instance()->removeE2eFiles(account);
-    }
-}
-
-void AccountSettings::removeActionFromEncryptionMessage(const QString &actionId)
-{
-    const auto foundEnableEncryptionActionIt = std::find_if(std::cbegin(_ui->encryptionMessage->actions()), std::cend(_ui->encryptionMessage->actions()), [&actionId](const QAction *action) {
-        return action->property(e2eUiActionIdKey).toString() == actionId;
-    });
-    if (foundEnableEncryptionActionIt != std::cend(_ui->encryptionMessage->actions())) {
-        _ui->encryptionMessage->removeAction(*foundEnableEncryptionActionIt);
-        (*foundEnableEncryptionActionIt)->deleteLater();
-        updateEncryptionMessageActions();
-    }
-}
-
-QAction *AccountSettings::addActionToEncryptionMessage(const QString &actionTitle, const QString &actionId)
-{
-    const auto encryptionActions = _ui->encryptionMessage->actions();
-    for (const auto &action : encryptionActions) {
-        if (action->property(e2eUiActionIdKey) == actionId) {
-            return action;
-        }
-    }
-
-    auto *const action = new QAction(actionTitle, this);
-    if (!actionId.isEmpty()) {
-        action->setProperty(e2eUiActionIdKey, actionId);
-    }
-    _ui->encryptionMessage->addAction(action);
-    updateEncryptionMessageActions();
-    return action;
-}
-
-void AccountSettings::setupE2eEncryptionMessage()
-{
-#ifdef BUILD_FILE_PROVIDER_MODULE
-    const auto encryptionMessage = tr("This account supports end-to-end encryption, but it needs to be set up first.") + QStringLiteral(" ") + tr("The virtual files integration does not support end-to-end encryption yet.");
-#else
-    const auto encryptionMessage = tr("This account supports end-to-end encryption, but it needs to be set up first.");
-#endif
-    _ui->encryptionMessageLabel->setText(encryptionMessage);
-    setEncryptionMessageIcon(Theme::createColorAwareIcon(QStringLiteral(":/client/theme/info.svg")));
-    _ui->encryptionMessage->hide();
-
-    auto *const actionSetupE2e = addActionToEncryptionMessage(tr("Set up encryption"), e2EeUiActionSetupEncryptionId);
-    connect(actionSetupE2e, &QAction::triggered, this, &AccountSettings::slotE2eEncryptionGenerateKeys);
-}
-
-void AccountSettings::setEncryptionMessageIcon(const QIcon &icon)
-{
-    if (icon.isNull()) {
-        _ui->encryptionMessageIcon->clear();
-        _ui->encryptionMessageIcon->hide();
-        return;
-    }
-
-    const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
-    _ui->encryptionMessageIcon->setPixmap(icon.pixmap(iconSize, iconSize));
-    _ui->encryptionMessageIcon->show();
-}
-
-void AccountSettings::updateEncryptionMessageActions()
-{
-    for (auto buttonIt = _encryptionMessageButtons.begin(); buttonIt != _encryptionMessageButtons.end(); ++buttonIt) {
-        _ui->encryptionMessageButtonsLayout->removeWidget(buttonIt.value());
-        buttonIt.value()->deleteLater();
-    }
-    _encryptionMessageButtons.clear();
-
-    const auto actions = _ui->encryptionMessage->actions();
-    auto *layout = _ui->encryptionMessageButtonsLayout;
-    int stretchIndex = -1;
-    for (int i = 0; i < layout->count(); ++i) {
-        if (layout->itemAt(i)->spacerItem()) {
-            stretchIndex = i;
-            break;
-        }
-    }
-    if (stretchIndex == -1) {
-        layout->addStretch();
-        stretchIndex = layout->count() - 1;
-    }
-
-    for (QAction *action : actions) {
-        auto *button = new QPushButton(_ui->encryptionMessage);
-        button->setText(action->text());
-        button->setIcon(action->icon());
-        button->setEnabled(action->isEnabled());
-        button->setVisible(action->isVisible());
-        connect(button, &QPushButton::clicked, action, &QAction::trigger);
-        connect(action, &QAction::changed, button, [button, action]() {
-            button->setText(action->text());
-            button->setIcon(action->icon());
-            button->setEnabled(action->isEnabled());
-            button->setVisible(action->isVisible());
-        });
-        layout->insertWidget(stretchIndex, button);
-        ++stretchIndex;
-        _encryptionMessageButtons.insert(action, button);
-    }
 }
 
 } // namespace OCC

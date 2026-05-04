@@ -17,7 +17,7 @@
 
 namespace OCC::Mac {
 
-Q_LOGGING_CATEGORY(lcFinderSyncXPC, "nextcloud.gui.macos.findersync.xpc", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFinderSyncXPC, "openlist.gui.macos.findersync.xpc", QtInfoMsg)
 
 } // namespace OCC::Mac
 

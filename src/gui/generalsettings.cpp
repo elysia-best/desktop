@@ -47,7 +47,7 @@
 #include <KZip>
 #include <chrono>
 
-Q_LOGGING_CATEGORY(lcGeneralSettings, "com.nextcloud.settings.general")
+Q_LOGGING_CATEGORY(lcGeneralSettings, "com.openlist.settings.general")
 
 #ifdef Q_OS_MACOS
 #include "common/utility_mac_sandbox.h"

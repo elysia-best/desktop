@@ -100,7 +100,7 @@ public:
      */
     void setPathPattern(const QString &pattern);
 
-    /** sync had been started via nextcloudcmd command line   */
+    /** sync had been started via the command line client */
     [[nodiscard]] bool isCmd() const;
     void setIsCmd(const bool isCmd);
 

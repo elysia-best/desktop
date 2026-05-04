@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2021 OpenList Team
 # SPDX-License-Identifier: GPL-2.0-or-later
 name: SonarCloud analysis
 on:
@@ -8,7 +8,7 @@ jobs:
   build:
     name: SonarCloud analysis
     runs-on: [ubuntu-latest, self-hosted]
-    container: ghcr.io/nextcloud/continuous-integration-client-qt6:client-sid-6.10.2-2
+    container: ghcr.io/nextcloud/continuous-integration-client-qt6:client-sid-6.10.2-2  # TODO: Update to OpenList CI container (ghcr.io/openlist/ci-client-qt6:*)
     env:
       SONAR_SERVER_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed

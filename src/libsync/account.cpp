@@ -8,25 +8,19 @@
 #include "accessmanager.h"
 #include "accountfwd.h"
 #include "capabilities.h"
-#include "clientsideencryptionjobs.h"
 #include "common/utility.h"
 #include "configfile.h"
 #include "cookiejar.h"
 #include "creds/abstractcredentials.h"
 #include "networkjobs.h"
-#include "pushnotifications.h"
 #include "theme.h"
 #include "updatechannel.h"
 #include "version.h"
 
 #include "deletejob.h"
-#include "lockfilejobs.h"
 
 #include "common/syncjournaldb.h"
 #include "common/asserts.h"
-#include "clientsideencryption.h"
-#include "ocsuserstatusconnector.h"
-
 #include "config.h"
 
 #include <QLoggingCategory>
@@ -56,44 +50,28 @@
 using namespace QKeychain;
 
 namespace {
-constexpr int pushNotificationsReconnectInterval = 1000 * 60 * 2;
 constexpr int usernamePrefillServerVersionMinSupportedMajor = 24;
 constexpr int checksumRecalculateRequestServerVersionMinSupportedMajor = 24;
-constexpr auto isSkipE2eeMetadataChecksumValidationAllowedInClientVersion = MIRALL_VERSION_MAJOR == 3 && MIRALL_VERSION_MINOR == 8;
 }
 
 namespace OCC {
-Q_LOGGING_CATEGORY(lcAccount, "nextcloud.sync.account", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccount, "openlist.sync.account", QtInfoMsg)
 const char app_password[] = "_app-password";
 
 Account::Account(QObject *parent)
     : QObject(parent)
     , _capabilities(QVariantMap())
     , _serverColor(Theme::defaultColor())
-    , _e2e{}
 {
     qRegisterMetaType<AccountPtr>("AccountPtr");
     qRegisterMetaType<Account *>("Account*");
-
-    _pushNotificationsReconnectTimer.setInterval(pushNotificationsReconnectInterval);
-    connect(&_pushNotificationsReconnectTimer, &QTimer::timeout, this, &Account::trySetupPushNotifications);
-
-    connect(&_e2e, &ClientSideEncryption::userCertificateNeedsMigrationChanged,
-            this, &Account::userCertificateNeedsMigrationChanged);
 }
 
 AccountPtr Account::create()
 {
     AccountPtr acc = AccountPtr(new Account);
     acc->setSharedThis(acc);
-    acc->_e2e.setAccount(acc);
     return acc;
-}
-
-ClientSideEncryption* Account::e2e()
-{
-    // Qt expects everything in the connect to be a pointer, so return a pointer.
-    return &_e2e;
 }
 
 Account::~Account() = default;
@@ -115,12 +93,12 @@ QString Account::davPathRoot() const
 void Account::setSharedThis(AccountPtr sharedThis)
 {
     _sharedThis = sharedThis.toWeakRef();
-    setupUserStatusConnector();
 }
 
 QString Account::davPathBase()
 {
-    return QStringLiteral("/remote.php/dav/files");
+    // OpenList serves WebDAV at /dav/<username>/ — the username is appended by davPathRoot().
+    return QStringLiteral("/dav");
 }
 
 AccountPtr Account::sharedFromThis()
@@ -310,69 +288,6 @@ void Account::setCredentials(AbstractCredentials *cred)
         this, &Account::slotCredentialsFetched);
     connect(_credentials.data(), &AbstractCredentials::asked,
         this, &Account::slotCredentialsAsked);
-
-    trySetupPushNotifications();
-}
-
-void Account::setPushNotificationsReconnectInterval(int interval)
-{
-    _pushNotificationsReconnectTimer.setInterval(interval);
-}
-
-void Account::trySetupClientStatusReporting()
-{
-    if (!_capabilities.isClientStatusReportingEnabled()) {
-        _clientStatusReporting.reset();
-        return;
-    }
-
-    if (!_clientStatusReporting) {
-        _clientStatusReporting = std::make_unique<ClientStatusReporting>(this);
-    }
-}
-
-void Account::reportClientStatus(const ClientStatusReportingStatus status) const
-{
-    if (_clientStatusReporting) {
-        _clientStatusReporting->reportClientStatus(status);
-    }
-}
-
-void Account::trySetupPushNotifications()
-{
-    // Stop the timer to prevent parallel setup attempts
-    _pushNotificationsReconnectTimer.stop();
-
-    if (_capabilities.availablePushNotifications() != PushNotificationType::None) {
-        qCInfo(lcAccount) << "Try to setup push notifications";
-
-        if (!_pushNotifications) {
-            _pushNotifications = new PushNotifications(this, this);
-
-            connect(_pushNotifications, &PushNotifications::ready, this, [this]() {
-                _pushNotificationsReconnectTimer.stop();
-                emit pushNotificationsReady(sharedFromThis());
-            });
-
-            const auto disablePushNotifications = [this]() {
-                qCInfo(lcAccount) << "Disable push notifications object because authentication failed or connection lost";
-                if (!_pushNotifications) {
-                    return;
-                }
-                if (!_pushNotifications->isReady()) {
-                    emit pushNotificationsDisabled(sharedFromThis());
-                }
-                if (!_pushNotificationsReconnectTimer.isActive()) {
-                    _pushNotificationsReconnectTimer.start();
-                }
-            };
-
-            connect(_pushNotifications, &PushNotifications::connectionLost, this, disablePushNotifications);
-            connect(_pushNotifications, &PushNotifications::authenticationFailed, this, disablePushNotifications);
-        }
-        // If push notifications already running it is no problem to call setup again
-        _pushNotifications->setup();
-    }
 }
 
 QUrl Account::davUrl() const
@@ -751,41 +666,11 @@ void Account::setCapabilities(const QVariantMap &caps)
     updateServerHasIntegration();
 
     emit capabilitiesChanged();
-
-    setupUserStatusConnector();
-    trySetupPushNotifications();
-
-    trySetupClientStatusReporting();
-}
-
-void Account::setupUserStatusConnector()
-{
-    _userStatusConnector = std::make_shared<OcsUserStatusConnector>(sharedFromThis());
-    connect(_userStatusConnector.get(), &UserStatusConnector::userStatusFetched, this, [this](const UserStatus &) {
-        emit userStatusChanged();
-    });
-    connect(_userStatusConnector.get(), &UserStatusConnector::serverUserStatusChanged, this, &Account::serverUserStatusChanged);
-    connect(_userStatusConnector.get(), &UserStatusConnector::messageCleared, this, [this] {
-        emit userStatusChanged();
-    });
-
-    _userStatusConnector->fetchUserStatus();
 }
 
 QString Account::serverVersion() const
 {
     return _serverVersion;
-}
-
-bool Account::shouldSkipE2eeMetadataChecksumValidation() const
-{
-    return isSkipE2eeMetadataChecksumValidationAllowedInClientVersion && _skipE2eeMetadataChecksumValidation;
-}
-
-void Account::resetShouldSkipE2eeMetadataChecksumValidation()
-{
-    _skipE2eeMetadataChecksumValidation = false;
-    emit wantsAccountSaved(sharedFromThis());
 }
 
 int Account::serverVersionInt() const
@@ -1034,53 +919,6 @@ void Account::removeLockStatusChangeInprogress(const QString &serverRelativePath
     }
 }
 
-PushNotifications *Account::pushNotifications() const
-{
-    return _pushNotifications;
-}
-
-std::shared_ptr<UserStatusConnector> Account::userStatusConnector() const
-{
-    return _userStatusConnector;
-}
-
-void Account::setLockFileState(const QString &serverRelativePath,
-                               const QString &remoteSyncPathWithTrailingSlash,
-                               const QString &localSyncPath,
-                               const QString &etag,
-                               SyncJournalDb * const journal,
-                               const SyncFileItem::LockStatus lockStatus,
-                               const SyncFileItem::LockOwnerType lockOwnerType)
-{
-    auto &lockStatusJobInProgress = _lockStatusChangeInprogress[serverRelativePath];
-    if (lockStatusJobInProgress.contains(lockStatus)) {
-        qCWarning(lcAccount) << "Already running a job with lockStatus:" << lockStatus << " for: " << serverRelativePath;
-        return;
-    }
-    lockStatusJobInProgress.push_back(lockStatus);
-    auto job = std::make_unique<LockFileJob>(sharedFromThis(), journal, serverRelativePath, remoteSyncPathWithTrailingSlash, localSyncPath, etag, lockStatus, lockOwnerType);
-    connect(job.get(), &LockFileJob::finishedWithoutError, this, [this, serverRelativePath, lockStatus]() {
-        removeLockStatusChangeInprogress(serverRelativePath, lockStatus);
-        Q_EMIT lockFileSuccess();
-    });
-    connect(job.get(), &LockFileJob::finishedWithError, this, [lockStatus, serverRelativePath, this](const int httpErrorCode, const QString &errorString, const QString &lockOwnerName) {
-        removeLockStatusChangeInprogress(serverRelativePath, lockStatus);
-        auto errorMessage = QString{};
-        const auto filePath = serverRelativePath.mid(1);
-
-        if (httpErrorCode == LockFileJob::LOCKED_HTTP_ERROR_CODE) {
-            errorMessage = tr("File %1 is already locked by %2.").arg(filePath, lockOwnerName);
-        } else if (lockStatus == SyncFileItem::LockStatus::LockedItem) {
-             errorMessage = tr("Lock operation on %1 failed with error %2").arg(filePath, errorString);
-        } else if (lockStatus == SyncFileItem::LockStatus::UnlockedItem) {
-             errorMessage = tr("Unlock operation on %1 failed with error %2").arg(filePath, errorString);
-        }
-        Q_EMIT lockFileError(errorMessage);
-    });
-    job->start();
-    static_cast<void>(job.release());
-}
-
 SyncFileItem::LockStatus Account::fileLockStatus(SyncJournalDb * const journal,
                                                  const QString &folderRelativePath) const
 {
@@ -1129,56 +967,6 @@ bool Account::trustCertificates() const
     return _trustCertificates;
 }
 
-void Account::setE2eEncryptionKeysGenerationAllowed(bool allowed)
-{
-    _e2eEncryptionKeysGenerationAllowed = allowed;
-}
-
-[[nodiscard]] bool Account::e2eEncryptionKeysGenerationAllowed() const
-{
-    return _e2eEncryptionKeysGenerationAllowed;
-}
-
-bool Account::askUserForMnemonic() const
-{
-    return _e2eAskUserForMnemonic;
-}
-
-bool Account::enforceUseHardwareTokenEncryption() const
-{
-#if defined CLIENTSIDEENCRYPTION_ENFORCE_USB_TOKEN
-    return CLIENTSIDEENCRYPTION_ENFORCE_USB_TOKEN;
-#else
-    return false;
-#endif
-}
-
-QString Account::encryptionHardwareTokenDriverPath() const
-{
-#if defined ENCRYPTION_HARDWARE_TOKEN_DRIVER_PATH
-    return ENCRYPTION_HARDWARE_TOKEN_DRIVER_PATH;
-#else
-    return {};
-#endif
-}
-
-QByteArray Account::encryptionCertificateFingerprint() const
-{
-    return _encryptionCertificateFingerprint;
-}
-
-void Account::setEncryptionCertificateFingerprint(const QByteArray &fingerprint)
-{
-    if (_encryptionCertificateFingerprint == fingerprint) {
-        return;
-    }
-
-    _encryptionCertificateFingerprint = fingerprint;
-    _e2e.usbTokenInformation()->setSha256Fingerprint(fingerprint);
-    Q_EMIT encryptionCertificateFingerprintChanged();
-    Q_EMIT wantsAccountSaved(sharedFromThis());
-}
-
 #ifdef BUILD_FILE_PROVIDER_MODULE
 QString Account::fileProviderDomainIdentifier() const
 {
@@ -1206,12 +994,6 @@ void Account::setLastRootETag(const QByteArray &etag)
 }
 
 #endif
-
-void Account::setAskUserForMnemonic(const bool ask)
-{
-    _e2eAskUserForMnemonic = ask;
-    emit askUserForMnemonicChanged();
-}
 
 void Account::listRemoteFolder(QPromise<OCC::PlaceholderCreateInfo> *promise, const QString &remoteSyncRootPath, const QString &subPath, SyncJournalDb *journalForFolder)
 {

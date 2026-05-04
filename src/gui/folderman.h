@@ -26,7 +26,6 @@ class TestFolderStatusModel;
 class ShareTestHelper;
 class EndToEndTestHelper;
 class TestSyncConflictsModel;
-class TestRemoteWipe;
 class FolderManTestHelper;
 class TestFileActionsModel;
 
@@ -417,7 +416,6 @@ private:
     friend class ::ShareTestHelper;
     friend class ::EndToEndTestHelper;
     friend class ::TestFolderStatusModel;
-    friend class ::TestRemoteWipe;
     friend class ::FolderManTestHelper;
     friend class ::TestFileActionsModel;
 };

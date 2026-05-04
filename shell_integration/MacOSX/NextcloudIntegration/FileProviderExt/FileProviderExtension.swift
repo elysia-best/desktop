@@ -1,4 +1,4 @@
-//  SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
+//  SPDX-FileCopyrightText: 2022 OpenList contributors
 //  SPDX-License-Identifier: GPL-2.0-or-later
 
 import FileProvider
@@ -41,7 +41,7 @@ import OSLog
     var connections = Set<NSXPCConnection>()
 
     var listener = NSXPCListener.anonymous()
-    let serviceName = NSFileProviderServiceName("com.nextcloud.desktopclient.ClientCommunicationService")
+    let serviceName = NSFileProviderServiceName("org.openlist.desktopclient.ClientCommunicationService")
 
     ///
     /// NextcloudKit instance used by this file provider extension object.

@@ -18,9 +18,7 @@
 #include "common/asserts.h"
 #include "gui/systray.h"
 #include "logger.h"
-#include <pushnotifications.h>
 #include <syncengine.h>
-#include "updatee2eefolderusersmetadatajob.h"
 
 #ifdef Q_OS_MACOS
 #include <CoreServices/CoreServices.h>
@@ -52,7 +50,7 @@ int numberOfSyncJournals(const QString &path)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFolderMan, "nextcloud.gui.folder.manager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFolderMan, "openlist.gui.folder.manager", QtInfoMsg)
 
 FolderMan *FolderMan::_instance = nullptr;
 
@@ -94,7 +92,7 @@ FolderMan::FolderMan(QObject *parent)
     connect(_lockWatcher.data(), &LockWatcher::fileUnlocked,
         this, &FolderMan::slotWatchedFileUnlocked);
 
-    connect(this, &FolderMan::folderListChanged, this, &FolderMan::slotSetupPushNotifications);
+
 }
 
 FolderMan *FolderMan::instance()
@@ -798,7 +796,6 @@ void FolderMan::forceSyncForFolder(Folder *folder)
 
 void FolderMan::removeE2eFiles(const AccountPtr &account) const
 {
-    Q_ASSERT(!account->e2e()->isInitialized());
     for (const auto folder : map()) {
         if(folder->accountState()->account()->id() == account->id()) {
             folder->removeLocalE2eFiles();
@@ -1094,10 +1091,8 @@ void FolderMan::slotStartScheduledFolderSync()
 
 bool FolderMan::pushNotificationsFilesReady(const AccountPtr &account)
 {
-    const auto pushNotifications = account->pushNotifications();
-    const auto pushFilesAvailable = account->capabilities().availablePushNotifications() & PushNotificationType::Files;
-
-    return pushFilesAvailable && pushNotifications && pushNotifications->isReady();
+    Q_UNUSED(account)
+    return false;
 }
 
 bool FolderMan::isSwitchToVfsNeeded(const FolderDefinition &folderDefinition) const

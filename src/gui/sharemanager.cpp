@@ -5,21 +5,20 @@
  */
 
 #include "sharemanager.h"
-#include "ocssharejob.h"
 #include "account.h"
 #include "folderman.h"
 #include "accountstate.h"
-#include "clientsideencryption.h"
-#include "updatee2eefolderusersmetadatajob.h"
+#include "networkjobs.h"
 
 #include <QUrl>
+#include <QBuffer>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcUserGroupShare, "nextcloud.gui.usergroupshare", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUserGroupShare, "openlist.gui.usergroupshare", QtInfoMsg)
 
 namespace OCC {
 
@@ -43,6 +42,25 @@ static void updateFolder(const AccountPtr &account, QStringView path)
             f->scheduleThisFolderSoon();
         }
     }
+}
+
+static QUrl openListApiUrl(const AccountPtr &account, const QString &path)
+{
+    return Utility::concatUrlPath(account->url(), path);
+}
+
+static QNetworkRequest makeJsonRequest()
+{
+    QNetworkRequest req;
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    return req;
+}
+
+static QBuffer *makeJsonBody(const QJsonObject &obj)
+{
+    auto *buf = new QBuffer;
+    buf->setData(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+    return buf;
 }
 
 
@@ -111,10 +129,19 @@ ShareePtr Share::getShareWith() const
 
 void Share::setPassword(const QString &password)
 {
-    auto * const job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &Share::slotPasswordSet);
-    connect(job, &OcsJob::ocsError, this, &Share::slotSetPasswordError);
-    job->setPassword(getId(), password);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("password")] = password;
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, password](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotSetPasswordError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotPasswordSet(QJsonDocument(), password);
+    });
 }
 
 bool Share::isPasswordSet() const
@@ -124,10 +151,19 @@ bool Share::isPasswordSet() const
 
 void Share::setPermissions(Permissions permissions)
 {
-    auto *job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &Share::slotPermissionsSet);
-    connect(job, &OcsJob::ocsError, this, &Share::slotOcsError);
-    job->setPermissions(getId(), permissions);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("permissions")] = static_cast<int>(permissions);
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, permissions](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotPermissionsSet(QJsonDocument(), permissions);
+    });
 }
 
 void Share::slotPermissionsSet(const QJsonDocument &, const QVariant &value)
@@ -143,10 +179,18 @@ Share::Permissions Share::getPermissions() const
 
 void Share::deleteShare()
 {
-    auto *job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &Share::slotDeleted);
-    connect(job, &OcsJob::ocsError, this, &Share::slotOcsError);
-    job->deleteShare(getId());
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    auto *job = _account->sendRequest("DELETE", openListApiUrl(_account, QStringLiteral("/api/share/delete")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotDeleted();
+    });
 }
 
 bool Share::isShareTypeUserGroupEmailRoomOrRemote(const ShareType type)
@@ -252,12 +296,36 @@ bool LinkShare::getHideDownload() const
 
 void LinkShare::setName(const QString &name)
 {
-    createShareJob(&LinkShare::slotNameSet)->setName(getId(), name);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("name")] = name;
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, name](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotNameSet(QJsonDocument(), name);
+    });
 }
 
 void LinkShare::setNote(const QString &note)
 {
-    createShareJob(&LinkShare::slotNoteSet)->setNote(getId(), note);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("note")] = note;
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, note](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotNoteSet(QJsonDocument(), note);
+    });
 }
 
 void LinkShare::slotNoteSet(const QJsonDocument &, const QVariant &note)
@@ -273,35 +341,60 @@ QString LinkShare::getToken() const
 
 void LinkShare::setExpireDate(const QDate &date)
 {
-    createShareJob(&LinkShare::slotExpireDateSet)->setExpireDate(getId(), date);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("expiration")] = date.toString(Qt::ISODate);
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, date](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        const auto data = QJsonDocument::fromJson(reply->readAll()).object();
+        slotExpireDateSet(QJsonDocument(data), date);
+    });
 }
 
 void LinkShare::setLabel(const QString &label)
 {
-    createShareJob(&LinkShare::slotLabelSet)->setLabel(getId(), label);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("label")] = label;
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, label](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotLabelSet(QJsonDocument(), label);
+    });
 }
 
 void LinkShare::setHideDownload(const bool hideDownload)
 {
-    createShareJob(&LinkShare::slotHideDownloadSet)->setHideDownload(getId(), hideDownload);
-}
-
-template <typename LinkShareSlot>
-OcsShareJob *LinkShare::createShareJob(const LinkShareSlot slotFunction) {
-    auto *job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, slotFunction);
-    connect(job, &OcsJob::ocsError, this, &LinkShare::slotOcsError);
-    return job;
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("hide_download")] = hideDownload ? 1 : 0;
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, hideDownload](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        slotHideDownloadSet(QJsonDocument(), hideDownload);
+    });
 }
 
 void LinkShare::slotExpireDateSet(const QJsonDocument &reply, const QVariant &value)
 {
-    auto data = reply.object().value("ocs"_L1).toObject().value("data"_L1).toObject();
+    const auto data = reply.object();
 
-    /*
-     * If the reply provides a data back (more REST style)
-     * they use this date.
-     */
     if (data.value("expiration"_L1).isString()) {
         _expireDate = QDateTime::fromString(data.value("expiration"_L1).toString(), "yyyy-MM-dd hh:mm:ss").date();
     } else {
@@ -356,10 +449,18 @@ UserGroupShare::UserGroupShare(AccountPtr account,
 
 void UserGroupShare::setNote(const QString &note)
 {
-    auto *job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &UserGroupShare::slotNoteSet);
-    connect(job, &OcsJob::ocsError, this, &UserGroupShare::noteSetError);
-    job->setNote(getId(), note);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("note")] = note;
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, note](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            emit noteSetError();
+            return;
+        }
+        slotNoteSet(QJsonDocument(), note);
+    });
 }
 
 QString UserGroupShare::getNote() const
@@ -385,20 +486,26 @@ void UserGroupShare::setExpireDate(const QDate &date)
         return;
     }
 
-    auto *job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &UserGroupShare::slotExpireDateSet);
-    connect(job, &OcsJob::ocsError, this, &UserGroupShare::slotOcsError);
-    job->setExpireDate(getId(), date);
+    QJsonObject body;
+    body[QStringLiteral("id")] = getId();
+    body[QStringLiteral("expiration")] = date.toString(Qt::ISODate);
+    auto *job = _account->sendRequest("PUT", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this, date](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        const auto data = QJsonDocument::fromJson(reply->readAll()).object();
+        slotExpireDateSet(QJsonDocument(data), date);
+    });
 }
 
 void UserGroupShare::slotExpireDateSet(const QJsonDocument &reply, const QVariant &value)
 {
-    auto data = reply.object().value("ocs"_L1).toObject().value("data"_L1).toObject();
+    const auto data = reply.object();
 
-    /*
-     * If the reply provides a data back (more REST style)
-     * they use this date.
-     */
     if (data.value("expiration"_L1).isString()) {
         _expireDate = QDateTime::fromString(data.value("expiration"_L1).toString(), "yyyy-MM-dd hh:mm:ss").date();
     } else {
@@ -417,36 +524,58 @@ void ShareManager::createLinkShare(const QString &path,
     const QString &name,
     const QString &password)
 {
-    auto *job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &ShareManager::slotLinkShareCreated);
-    connect(job, &OcsJob::ocsError, this, &ShareManager::slotOcsError);
-    job->createLinkShare(path, name, password);
+    QJsonObject body;
+    body[QStringLiteral("path")] = path;
+    body[QStringLiteral("share_type")] = static_cast<int>(Share::TypeLink);
+    if (!name.isEmpty())
+        body[QStringLiteral("name")] = name;
+    if (!password.isEmpty())
+        body[QStringLiteral("password")] = password;
+    auto *job = _account->sendRequest("POST", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
+        const auto httpCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (reply->error() != QNetworkReply::NoError) {
+            if (httpCode == 403) {
+                emit linkShareRequiresPassword(reply->errorString());
+                return;
+            }
+            slotOcsError(httpCode, reply->errorString());
+            return;
+        }
+        const auto json = QJsonDocument::fromJson(reply->readAll());
+        slotLinkShareCreated(json);
+    });
 }
 
 void ShareManager::createSecureFileDropShare(const QString &path, const QString &name, const QString &password)
 {
-    const auto createShareJob = new OcsShareJob(_account);
-    connect(createShareJob, &OcsShareJob::shareJobFinished, this, &ShareManager::slotLinkShareCreated);
-    connect(createShareJob, &OcsJob::ocsError, this, &ShareManager::slotOcsError);
-    createShareJob->createSecureFileDropLinkShare(path, name, password);
+    QJsonObject body;
+    body[QStringLiteral("path")] = path;
+    body[QStringLiteral("share_type")] = static_cast<int>(Share::TypeLink);
+    body[QStringLiteral("name")] = name;
+    if (!password.isEmpty())
+        body[QStringLiteral("password")] = password;
+    auto *job = _account->sendRequest("POST", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+        makeJsonRequest(), makeJsonBody(body));
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
+        const auto httpCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (reply->error() != QNetworkReply::NoError) {
+            if (httpCode == 403) {
+                emit linkShareRequiresPassword(reply->errorString());
+                return;
+            }
+            slotOcsError(httpCode, reply->errorString());
+            return;
+        }
+        const auto json = QJsonDocument::fromJson(reply->readAll());
+        slotLinkShareCreated(json);
+    });
 }
 
 void ShareManager::slotLinkShareCreated(const QJsonDocument &reply)
 {
-    QString message;
-    int code = OcsShareJob::getJsonReturnCode(reply, message);
-
-    /*
-     * Before we had decent sharing capabilities on the server a 403 "generally"
-     * meant that a share was password protected
-     */
-    if (code == 403) {
-        emit linkShareRequiresPassword(message);
-        return;
-    }
-
-    //Parse share
-    auto data = reply.object().value("ocs").toObject().value("data").toObject();
+    const auto data = reply.object();
     QSharedPointer<LinkShare> share(parseLinkShare(data));
 
     emit linkShareCreated(share);
@@ -461,23 +590,23 @@ void ShareManager::createShare(const QString &path,
     const Share::Permissions desiredPermissions,
     const QString &password)
 {
-    auto job = new OcsShareJob(_account);
-    connect(job, &OcsJob::ocsError, this, &ShareManager::slotOcsError);
-    connect(job, &OcsShareJob::shareJobFinished, this,
-        [=, this](const QJsonDocument &reply) {
-            // Find existing share permissions (if this was shared with us)
+    // First fetch shares for this path to determine existing permissions
+    auto *listJob = _account->sendRequest("GET",
+        openListApiUrl(_account, QStringLiteral("/api/share/list?path=") + path),
+        makeJsonRequest());
+    connect(listJob, &SimpleNetworkJob::finishedSignal, this,
+        [=, this](QNetworkReply *reply) {
             Share::Permissions existingPermissions = SharePermissionAll;
-            const auto &replyObject = reply.object();
-            const auto &ocsObject = replyObject["ocs"_L1].toObject();
-            const auto &dataArray = ocsObject["data"_L1].toArray();
-            for (const auto &element : dataArray) {
-                auto map = element.toObject();
-                if (map["file_target"_L1] == path)
-                    existingPermissions = Share::Permissions(map["permissions"_L1].toInt());
+            if (reply->error() == QNetworkReply::NoError) {
+                const auto doc = QJsonDocument::fromJson(reply->readAll());
+                const auto dataArray = doc.object().value("shares"_L1).toArray();
+                for (const auto &element : dataArray) {
+                    auto map = element.toObject();
+                    if (map["path"_L1] == path)
+                        existingPermissions = Share::Permissions(map["permissions"_L1].toInt());
+                }
             }
 
-            // Limit the permissions we request for a share to the ones the item
-            // was shared with initially.
             auto validPermissions = desiredPermissions;
             if (validPermissions == SharePermissionAll) {
                 validPermissions = existingPermissions;
@@ -486,54 +615,32 @@ void ShareManager::createShare(const QString &path,
                 validPermissions &= existingPermissions;
             }
 
-            auto *job = new OcsShareJob(_account);
-            connect(job, &OcsShareJob::shareJobFinished, this, &ShareManager::slotShareCreated);
-            connect(job, &OcsJob::ocsError, this, &ShareManager::slotOcsError);
-            job->createShare(path, shareType, shareWith, validPermissions, password);
+            // Create the share
+            QJsonObject body;
+            body[QStringLiteral("path")] = path;
+            body[QStringLiteral("share_type")] = static_cast<int>(shareType);
+            body[QStringLiteral("share_with")] = shareWith;
+            body[QStringLiteral("permissions")] = static_cast<int>(validPermissions);
+            if (!password.isEmpty())
+                body[QStringLiteral("password")] = password;
+
+            auto *createJob = _account->sendRequest("POST", openListApiUrl(_account, QStringLiteral("/api/share/create")),
+                makeJsonRequest(), makeJsonBody(body));
+            connect(createJob, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *creply) {
+                if (creply->error() != QNetworkReply::NoError) {
+                    slotOcsError(creply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                        creply->errorString());
+                    return;
+                }
+                const auto json = QJsonDocument::fromJson(creply->readAll());
+                slotShareCreated(json);
+            });
         });
-    job->getSharedWithMe();
-}
-
-void ShareManager::createE2EeShareJob(const QString &fullRemotePath,
-                                      const ShareePtr sharee,
-                                      const Share::Permissions permissions,
-                                      const QString &password)
-{
-    Folder *folder = nullptr;
-    for (const auto &f : FolderMan::instance()->map()) {
-        if (f->accountState()->account() != _account) {
-            continue;
-        }
-        folder = f;
-    }
-
-    if (!folder) {
-        emit serverError(0, "Failed creating share");
-        return;
-    }
-
-    Q_ASSERT(folder->remotePath() == "/"_L1 ||
-        Utility::noLeadingSlashPath(fullRemotePath).startsWith(Utility::noLeadingSlashPath(Utility::noTrailingSlashPath(folder->remotePath()))));
-
-    const auto createE2eeShareJob = new UpdateE2eeFolderUsersMetadataJob(_account,
-                                                                         folder->journalDb(),
-                                                                         folder->remotePath(),
-                                                                         UpdateE2eeFolderUsersMetadataJob::Add,
-                                                                         fullRemotePath,
-                                                                         sharee->shareWith(),
-                                                                         sharee->displayName(),
-                                                                         QSslCertificate{},
-                                                                         this);
-
-    createE2eeShareJob->setUserData({sharee, permissions, password});
-    connect(createE2eeShareJob, &UpdateE2eeFolderUsersMetadataJob::finished, this, &ShareManager::slotCreateE2eeShareJobFinised);
-    createE2eeShareJob->start();
 }
 
 void ShareManager::slotShareCreated(const QJsonDocument &reply)
 {
-    //Parse share
-    auto data = reply.object().value("ocs"_L1).toObject().value("data"_L1).toObject();
+    auto data = reply.object();
     SharePtr share(parseShare(data));
 
     emit shareCreated(share);
@@ -543,26 +650,41 @@ void ShareManager::slotShareCreated(const QJsonDocument &reply)
 
 void ShareManager::fetchShares(const QString &path)
 {
-    const auto job = new OcsShareJob(_account);
-    connect(job, &OcsShareJob::shareJobFinished, this, &ShareManager::slotSharesFetched);
-    connect(job, &OcsJob::ocsError, this, &ShareManager::slotOcsError);
-    job->getShares(path);
+    auto *job = _account->sendRequest("GET",
+        openListApiUrl(_account, QStringLiteral("/api/share/list?path=") + path),
+        makeJsonRequest());
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        const auto json = QJsonDocument::fromJson(reply->readAll());
+        slotSharesFetched(json);
+    });
 }
 
 void ShareManager::fetchSharedWithMe(const QString &path)
 {
-    const auto sharedWithMeJob = new OcsShareJob(_account);
-    connect(sharedWithMeJob, &OcsShareJob::shareJobFinished, this, &ShareManager::slotSharedWithMeFetched);
-    connect(sharedWithMeJob, &OcsJob::ocsError, this, &ShareManager::slotOcsError);
-    sharedWithMeJob->getSharedWithMe(path);
+    auto *job = _account->sendRequest("GET",
+        openListApiUrl(_account, QStringLiteral("/api/share/list?shared_with_me=true&path=") + path),
+        makeJsonRequest());
+    connect(job, &SimpleNetworkJob::finishedSignal, this, [this](QNetworkReply *reply) {
+        if (reply->error() != QNetworkReply::NoError) {
+            slotOcsError(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
+                reply->errorString());
+            return;
+        }
+        const auto json = QJsonDocument::fromJson(reply->readAll());
+        slotSharedWithMeFetched(json);
+    });
 }
 
 const QList<SharePtr> ShareManager::parseShares(const QJsonDocument &reply) const
 {
     qDebug() << reply;
-    const auto tmpShares = reply.object().value("ocs"_L1).toObject().value("data"_L1).toArray();
-    const QString versionString = _account->serverVersion();
-    qCDebug(lcSharing) << versionString << "Fetched" << tmpShares.count() << "shares";
+    const auto tmpShares = reply.object().value("shares"_L1).toArray();
+    qCDebug(lcUserGroupShare) << "Fetched" << tmpShares.count() << "shares";
 
     QList<SharePtr> shares;
 
@@ -697,27 +819,4 @@ void ShareManager::slotOcsError(int statusCode, const QString &message)
     emit serverError(statusCode, message);
 }
 
-
-void ShareManager::slotCreateE2eeShareJobFinised(int statusCode, const QString &message)
-{
-    const auto job = qobject_cast<UpdateE2eeFolderUsersMetadataJob *>(sender());
-    Q_ASSERT(job);
-    if (!job) {
-        qCWarning(lcUserGroupShare) << "slotCreateE2eeShareJobFinised must be called by UpdateE2eeShareMetadataJob::finished signal!";
-        return;
-    }
-    disconnect(job, &UpdateE2eeFolderUsersMetadataJob::finished, this, &ShareManager::slotCreateE2eeShareJobFinised);
-    const auto userData = job->userData();
-    Q_ASSERT(userData.sharee);
-    if (!userData.sharee) {
-        qCWarning(lcUserGroupShare) << "missing userData Map in UpdateE2eeShareMetadataJob instance!";
-        emit serverError(-1, tr("Error"));
-        return;
-    }
-    if (statusCode != 200) {
-        emit serverError(statusCode, message);
-    } else {
-        createShare(job->path(), Share::ShareType(userData.sharee->type()), userData.sharee->shareWith(), userData.desiredPermissions, userData.password);
-    }
-}
 }

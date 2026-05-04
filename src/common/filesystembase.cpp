@@ -30,7 +30,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcFileSystem, "nextcloud.sync.filesystem", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFileSystem, "openlist.sync.filesystem", QtInfoMsg)
 
 QString FileSystem::longWinPath(const QString &inpath)
 {

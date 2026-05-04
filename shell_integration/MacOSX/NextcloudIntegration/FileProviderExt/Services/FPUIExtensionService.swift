@@ -1,4 +1,4 @@
-//  SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+//  SPDX-FileCopyrightText: 2024 OpenList contributors
 //  SPDX-License-Identifier: GPL-2.0-or-later
 
 import FileProvider
@@ -9,7 +9,7 @@ import NextcloudKit
 ///
 /// This does not need to be branded because it is scoped by the app-specific file provider domains in the file system already.
 ///
-let fpUiExtensionServiceName = NSFileProviderServiceName("com.nextcloud.desktopclient.FPUIExtensionService")
+let fpUiExtensionServiceName = NSFileProviderServiceName("org.openlist.desktopclient.FPUIExtensionService")
 
 ///
 /// The requirements of the service exposed and dedicated to the file provider user interface extension.

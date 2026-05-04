@@ -14,7 +14,6 @@ find_package(Qt${QT_VERSION_MAJOR} OPTIONAL_COMPONENTS HttpServer CONFIG QUIET)
 add_library(testutils
   STATIC
   syncenginetestutils.cpp
-  pushnotificationstestutils.cpp
   themeutils.cpp
   testhelper.cpp
   sharetestutils.cpp
@@ -23,7 +22,7 @@ add_library(testutils
   foldermantestutils.cpp
 )
 
-target_link_libraries(testutils PUBLIC Nextcloud::sync Qt::Test Qt::Core5Compat)
+target_link_libraries(testutils PUBLIC OpenList::sync Qt::Test Qt::Core5Compat)
 target_include_directories(testutils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(testutils PROPERTIES FOLDER Tests)
 
@@ -50,9 +49,6 @@ nextcloud_add_test(ConcatUrl)
 nextcloud_add_test(Cookies)
 nextcloud_add_test(XmlParse)
 nextcloud_add_test(ChecksumValidator)
-
-nextcloud_add_test(ClientSideEncryption)
-nextcloud_add_test(ClientSideEncryptionV2)
 
 if (NOT APPLE)
     nextcloud_add_test(ExcludedFiles)
@@ -91,32 +87,24 @@ if (NOT WIN32)
 endif()
 
 nextcloud_add_test(Capabilities)
-nextcloud_add_test(PushNotifications)
 nextcloud_add_test(Theme)
 nextcloud_add_test(IconUtils)
-nextcloud_add_test(SetUserStatusDialog)
 nextcloud_add_test(UnifiedSearchListmodel)
 nextcloud_add_test(ActivityListModel)
 nextcloud_add_test(SortedActivityListModel)
 nextcloud_add_test(ActivityData)
-nextcloud_add_test(TalkReply)
-nextcloud_add_test(LockFile)
 nextcloud_add_test(ShareModel)
 nextcloud_add_test(ShareeModel)
 nextcloud_add_test(SortedShareModel)
-nextcloud_add_test(SecureFileDrop)
 nextcloud_add_test(FileTagModel)
 nextcloud_add_test(SyncConflictsModel)
 nextcloud_add_test(DateFieldBackend)
-nextcloud_add_test(ClientStatusReporting)
 
 nextcloud_add_test(FileSystem)
 
 nextcloud_add_test(FolderStatusModel)
 
-target_link_libraries(SecureFileDropTest PRIVATE Nextcloud::sync)
-configure_file(fake2eelocksucceeded.json "${PROJECT_BINARY_DIR}/bin/fake2eelocksucceeded.json" COPYONLY)
-configure_file(fakefiledrope2eefoldermetadata.json "${PROJECT_BINARY_DIR}/bin/fakefiledrope2eefoldermetadata.json" COPYONLY)
+target_link_libraries(SecureFileDropTest PRIVATE OpenList::sync)
 configure_file(e2etestsfakecert.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecert.pem" COPYONLY)
 configure_file(e2etestsfakecertprivatekey.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecertprivatekey.pem" COPYONLY)
 configure_file(e2etestsfakecertpublickey.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecertpublickey.pem" COPYONLY)

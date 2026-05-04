@@ -9,9 +9,8 @@
 
 #include "accountfwd.h"
 #include "capabilities.h"
-#include "clientsideencryption.h"
-#include "clientstatusreporting.h"
 #include "common/utility.h"
+#include "openlistsettings.h"
 #include "common/vfs.h"
 #include "syncfileitem.h"
 #include "updatechannel.h"
@@ -52,8 +51,6 @@ namespace OCC {
 class AbstractCredentials;
 class AccessManager;
 class SimpleNetworkJob;
-class PushNotifications;
-class UserStatusConnector;
 class SyncJournalDb;
 
 /**
@@ -82,8 +79,6 @@ class OWNCLOUDSYNC_EXPORT Account : public QObject
     Q_PROPERTY(QString davDisplayName MEMBER _davDisplayName)
     Q_PROPERTY(QString prettyName READ prettyName NOTIFY prettyNameChanged)
     Q_PROPERTY(QUrl url MEMBER _url)
-    Q_PROPERTY(bool e2eEncryptionKeysGenerationAllowed MEMBER _e2eEncryptionKeysGenerationAllowed)
-    Q_PROPERTY(bool askUserForMnemonic READ askUserForMnemonic WRITE setAskUserForMnemonic NOTIFY askUserForMnemonicChanged)
     Q_PROPERTY(QNetworkProxy::ProxyType proxyType READ proxyType WRITE setProxyType NOTIFY proxyTypeChanged)
     Q_PROPERTY(QString proxyHostName READ proxyHostName WRITE setProxyHostName NOTIFY proxyHostNameChanged)
     Q_PROPERTY(int proxyPort READ proxyPort WRITE setProxyPort NOTIFY proxyPortChanged)
@@ -94,9 +89,6 @@ class OWNCLOUDSYNC_EXPORT Account : public QObject
     Q_PROPERTY(AccountNetworkTransferLimitSetting downloadLimitSetting READ downloadLimitSetting WRITE setDownloadLimitSetting NOTIFY downloadLimitSettingChanged)
     Q_PROPERTY(unsigned int uploadLimit READ uploadLimit WRITE setUploadLimit NOTIFY uploadLimitChanged)
     Q_PROPERTY(unsigned int downloadLimit READ downloadLimit WRITE setDownloadLimit NOTIFY downloadLimitChanged)
-    Q_PROPERTY(bool enforceUseHardwareTokenEncryption READ enforceUseHardwareTokenEncryption NOTIFY enforceUseHardwareTokenEncryptionChanged)
-    Q_PROPERTY(QString encryptionHardwareTokenDriverPath READ encryptionHardwareTokenDriverPath NOTIFY encryptionHardwareTokenDriverPathChanged)
-    Q_PROPERTY(QByteArray encryptionCertificateFingerprint READ encryptionCertificateFingerprint WRITE setEncryptionCertificateFingerprint NOTIFY encryptionCertificateFingerprintChanged)
 #ifdef BUILD_FILE_PROVIDER_MODULE
     Q_PROPERTY(QString fileProviderDomainIdentifier READ fileProviderDomainIdentifier WRITE setFileProviderDomainIdentifier)
 #endif
@@ -269,10 +261,6 @@ public:
      */
     [[nodiscard]] QString serverVersion() const;
 
-    // check if the checksum validation of E2EE metadata is allowed to be skipped via config file, this will only work before client 3.9.0
-    [[nodiscard]] bool shouldSkipE2eeMetadataChecksumValidation() const;
-    void resetShouldSkipE2eeMetadataChecksumValidation();
-
     /** Server version for easy comparison.
      *
      * Example: serverVersionInt() >= makeServerVersion(11, 2, 3)
@@ -326,9 +314,6 @@ public:
     /// Called by network jobs on credential errors, emits invalidCredentials()
     void handleInvalidCredentials();
 
-    ClientSideEncryption* e2e();
-
-    /// Used in RemoteWipe
     void retrieveAppPassword();
     void writeAppPasswordOnce(const QString &appPassword);
     void deleteAppPassword();
@@ -338,17 +323,6 @@ public:
     /// Direct Editing
     // Check for the directEditing capability
     void fetchDirectEditors(const QUrl &directEditingURL, const QString &directEditingETag);
-
-    void setupUserStatusConnector();
-    void trySetupPushNotifications();
-    [[nodiscard]] PushNotifications *pushNotifications() const;
-    void setPushNotificationsReconnectInterval(int interval);
-
-    void trySetupClientStatusReporting();
-
-    void reportClientStatus(const ClientStatusReportingStatus status) const;
-
-    [[nodiscard]] std::shared_ptr<UserStatusConnector> userStatusConnector() const;
 
     void setLockFileState(const QString &serverRelativePath,
                           const QString &remoteSyncPathWithTrailingSlash,
@@ -364,11 +338,6 @@ public:
 
     void setTrustCertificates(bool trustCertificates);
     [[nodiscard]] bool trustCertificates() const;
-
-    void setE2eEncryptionKeysGenerationAllowed(bool allowed);
-    [[nodiscard]] bool e2eEncryptionKeysGenerationAllowed() const;
-
-    [[nodiscard]] bool askUserForMnemonic() const;
 
     void updateServerSubcription();
     void updateDesktopEnterpriseChannel();
@@ -418,13 +387,6 @@ public:
     [[nodiscard]] UpdateChannel enterpriseUpdateChannel() const;
     void setEnterpriseUpdateChannel(const UpdateChannel &channel);
 
-    [[nodiscard]] bool enforceUseHardwareTokenEncryption() const;
-
-    [[nodiscard]] QString encryptionHardwareTokenDriverPath() const;
-
-    [[nodiscard]] QByteArray encryptionCertificateFingerprint() const;
-    void setEncryptionCertificateFingerprint(const QByteArray &fingerprint);
-
 #ifdef BUILD_FILE_PROVIDER_MODULE
     [[nodiscard]] QString fileProviderDomainIdentifier() const;
     void setFileProviderDomainIdentifier(const QString &identifier);
@@ -444,8 +406,6 @@ public slots:
     /// Used when forgetting credentials
     void clearQNAMCache();
     void slotHandleSslErrors(QNetworkReply *, QList<QSslError>);
-    void setAskUserForMnemonic(const bool ask);
-
     void listRemoteFolder(QPromise<OCC::PlaceholderCreateInfo> *promise,
                           const QString &remoteSyncRootPath,
                           const QString &subPath,
@@ -474,24 +434,9 @@ signals:
     void accountChangedAvatar();
     void accountChangedDisplayName();
     void prettyNameChanged();
-    void askUserForMnemonicChanged();
-    void enforceUseHardwareTokenEncryptionChanged();
-    void encryptionHardwareTokenDriverPathChanged();
-
-    /// Used in RemoteWipe
     void appPasswordRetrieved(QString);
 
-    void pushNotificationsReady(const OCC::AccountPtr &account);
-    void pushNotificationsDisabled(const OCC::AccountPtr &account);
-
-    void userStatusChanged();
-
-    void serverUserStatusChanged();
-
     void capabilitiesChanged();
-
-    void lockFileSuccess();
-    void lockFileError(const QString&);
 
     void networkProxySettingChanged();
     void proxyTypeChanged();
@@ -505,9 +450,6 @@ signals:
     void uploadLimitChanged();
     void downloadLimitChanged();
     void termsOfServiceNeedToBeChecked();
-
-    void encryptionCertificateFingerprintChanged();
-    void userCertificateNeedsMigrationChanged();
 
     void rootFolderQuotaChanged(const int64_t &usedBytes, const int64_t &availableBytes);
 
@@ -529,15 +471,11 @@ private:
 
     bool _trustCertificates = false;
 
-    bool _e2eEncryptionKeysGenerationAllowed = false;
-    bool _e2eAskUserForMnemonic = false;
-
     QWeakPointer<Account> _sharedThis;
     QString _id;
     QString _davUser;
     QString _davDisplayName;
     QString _displayName;
-    QTimer _pushNotificationsReconnectTimer;
 #ifndef TOKEN_AUTH_ONLY
     QImage _avatarImg;
 #endif
@@ -560,7 +498,6 @@ private:
     QString _serverVersion;
     QColor _serverColor;
     QColor _serverTextColor = QColorConstants::White;
-    bool _skipE2eeMetadataChecksumValidation = false;
     QScopedPointer<AbstractSslErrorHandler> _sslErrorHandler;
     QSharedPointer<QNetworkAccessManager> _networkAccessManager;
     QScopedPointer<AbstractCredentials> _credentials;
@@ -571,21 +508,12 @@ private:
 
     static QString _configFileName;
 
-    ClientSideEncryption _e2e;
-
-    /// Used in RemoteWipe
     bool _wroteAppPassword = false;
 
     friend class AccountManager;
 
     // Direct Editing
     QString _lastDirectEditingETag;
-
-    PushNotifications *_pushNotifications = nullptr;
-
-    std::unique_ptr<ClientStatusReporting> _clientStatusReporting;
-
-    std::shared_ptr<UserStatusConnector> _userStatusConnector;
 
     QHash<QString, QVector<SyncFileItem::LockStatus>> _lockStatusChangeInprogress;
 
@@ -601,7 +529,6 @@ private:
     unsigned int _downloadLimit = 0;
     bool _serverHasValidSubscription = false;
     UpdateChannel _enterpriseUpdateChannel = UpdateChannel::Invalid;
-    QByteArray _encryptionCertificateFingerprint;
 #ifdef BUILD_FILE_PROVIDER_MODULE
     QString _fileProviderDomainIdentifier;
     QByteArray _lastRootETag; // Runtime-only, not persisted
@@ -610,21 +537,6 @@ private:
     void updateServerHasIntegration();
     bool _serverHasIntegration;
 
-    /* IMPORTANT - remove later - FIXME MS@2019-12-07 -->
-     * TODO: For "Log out" & "Remove account": Remove client CA certs and KEY!
-     *
-     *       Disabled as long as selecting another cert is not supported by the UI.
-     *
-     *       Being able to specify a new certificate is important anyway: expiry etc.
-     *
-     *       We introduce this dirty hack here, to allow deleting them upon Remote Wipe.
-    */
-    public:
-        void setRemoteWipeRequested_HACK() { _isRemoteWipeRequested_HACK = true; }
-        bool isRemoteWipeRequested_HACK() { return _isRemoteWipeRequested_HACK; }
-    private:
-        bool _isRemoteWipeRequested_HACK = false;
-    // <-- FIXME MS@2019-12-07
 };
 }
 

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2022 OpenList Team
 # SPDX-License-Identifier: GPL-2.0-or-later
 name: clang-tidy-review
 
@@ -9,7 +9,7 @@ on:
 jobs:
   clang-tidy:
     runs-on: ubuntu-latest
-    container: ghcr.io/nextcloud/continuous-integration-client-qt6:client-sid-6.10.2-2
+    container: ghcr.io/nextcloud/continuous-integration-client-qt6:client-sid-6.10.2-2  # TODO: Update to OpenList CI container (ghcr.io/openlist/ci-client-qt6:*)
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:

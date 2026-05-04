@@ -28,7 +28,7 @@ static const auto secureFileDropPlaceholderLinkShareId = QStringLiteral("__secur
 
 namespace OCC
 {
-Q_LOGGING_CATEGORY(lcShareModel, "com.nextcloud.sharemodel")
+Q_LOGGING_CATEGORY(lcShareModel, "com.openlist.sharemodel")
 
 ShareModel::ShareModel(QObject *parent)
     : QAbstractListModel(parent)

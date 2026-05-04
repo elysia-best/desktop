@@ -31,7 +31,7 @@
 #include <comdef.h>
 #include <memory>
 
-Q_LOGGING_CATEGORY(lcCfApiWrapper, "nextcloud.sync.vfs.cfapi.wrapper", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCfApiWrapper, "openlist.sync.vfs.cfapi.wrapper", QtInfoMsg)
 using namespace Qt::Literals::StringLiterals;
 
 #define FIELD_SIZE( type, field ) ( sizeof( ( (type*)0 )->field ) )
@@ -783,7 +783,7 @@ bool createSyncRootRegistryKeys(const QString &providerName, const QString &fold
     }
 
     // syncRootId should be: [storage provider ID]![Windows SID]![Account ID]![FolderAlias] (FolderAlias is a custom part added here to be able to register multiple sync folders for the same account)
-    // folder registry keys go like: Nextcloud!S-1-5-21-2096452760-2617351404-2281157308-1001!user@nextcloud.lan:8080!0, Nextcloud!S-1-5-21-2096452760-2617351404-2281157308-1001!user@nextcloud.lan:8080!1, etc. for each sync folder
+    // folder registry keys go like: OpenList!S-1-5-21-2096452760-2617351404-2281157308-1001!user@oplist.org:8080!0, OpenList!S-1-5-21-2096452760-2617351404-2281157308-1001!user@oplist.org:8080!1, etc. for each sync folder
     const auto syncRootId = QStringLiteral("%1!%2!%3!%4").arg(providerName).arg(windowsSid).arg(accountDisplayName).arg(folderAlias);
     const QString providerSyncRootIdRegistryKey = syncRootManagerRegKey + QStringLiteral("\\") + syncRootId;
     const QString providerSyncRootIdUserSyncRootsRegistryKey = providerSyncRootIdRegistryKey + QStringLiteral(R"(\UserSyncRoots\)");

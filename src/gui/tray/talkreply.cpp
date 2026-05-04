@@ -16,7 +16,7 @@ using namespace Qt::StringLiterals;
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcTalkReply, "nextcloud.gui.talkreply", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcTalkReply, "openlist.gui.talkreply", QtInfoMsg)
 
 TalkReply::TalkReply(AccountState *accountState, QObject *parent)
     : QObject(parent)

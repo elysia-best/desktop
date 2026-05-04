@@ -176,8 +176,8 @@ void Utility::setupFavLink(const QString &folder)
 
 QString Utility::syncFolderDisplayName(const QString &currentDisplayName, const QString &newName)
 {
-    const auto nextcloud = QStringLiteral("Nextcloud");
-    if (!currentDisplayName.startsWith(nextcloud)) {
+    const auto openlist = QStringLiteral("OpenList");
+    if (!currentDisplayName.startsWith(openlist)) {
         qCWarning(lcUtility) << "Nothings needs to be rename for" << currentDisplayName;
         return currentDisplayName;
     }

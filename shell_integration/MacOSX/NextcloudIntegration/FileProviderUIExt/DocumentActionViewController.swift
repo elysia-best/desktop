@@ -1,4 +1,4 @@
-//  SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+//  SPDX-FileCopyrightText: 2024 OpenList contributors
 //  SPDX-License-Identifier: GPL-2.0-or-later
 
 import FileProviderUI
@@ -64,13 +64,13 @@ class DocumentActionViewController: FPUIActionExtensionViewController {
         logger?.info("Preparing action: \(actionIdentifier)")
 
         switch (actionIdentifier) {
-            case "com.nextcloud.desktopclient.FileProviderUIExt.ShareAction":
+            case "org.openlist.desktopclient.FileProviderUIExt.ShareAction":
                 prepare(childViewController: ShareViewController(itemIdentifiers, serviceResolver: serviceResolver, log: log))
-            case "com.nextcloud.desktopclient.FileProviderUIExt.LockFileAction":
+            case "org.openlist.desktopclient.FileProviderUIExt.LockFileAction":
                 prepare(childViewController: LockViewController(itemIdentifiers, locking: true, serviceResolver: serviceResolver, log: log))
-            case "com.nextcloud.desktopclient.FileProviderUIExt.UnlockFileAction":
+            case "org.openlist.desktopclient.FileProviderUIExt.UnlockFileAction":
                 prepare(childViewController: LockViewController(itemIdentifiers, locking: false, serviceResolver: serviceResolver, log: log))
-            case "com.nextcloud.desktopclient.FileProviderUIExt.EvictAction":
+            case "org.openlist.desktopclient.FileProviderUIExt.EvictAction":
                 evict(itemsWithIdentifiers: itemIdentifiers, inDomain: domain);
                 extensionContext.completeRequest();
             default:

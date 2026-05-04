@@ -15,7 +15,6 @@
 #include "deletejob.h"
 #include "folderman.h"
 #include "folder.h"
-#include "encryptfolderjob.h"
 #include "theme.h"
 #include "common/syncjournalfilerecord.h"
 #include "syncengine.h"
@@ -88,10 +87,6 @@
 
 using namespace Qt::StringLiterals;
 
-namespace {
-constexpr auto encryptJobPropertyFolder = "folder";
-constexpr auto encryptJobPropertyPath = "path";
-}
 
 namespace {
 
@@ -221,8 +216,8 @@ void setClipboardText(const QString &text)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcSocketApi, "nextcloud.gui.socketapi", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPublicLink, "nextcloud.gui.socketapi.publiclink", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcSocketApi, "openlist.gui.socketapi", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPublicLink, "openlist.gui.socketapi.publiclink", QtInfoMsg)
 
 
 void SocketListener::sendMessage(const QString &message, bool doWait) const
@@ -523,70 +518,8 @@ void SocketApi::processFileActivityRequest(const QString &localFile)
 
 void SocketApi::processEncryptRequest(const QString &localFile)
 {
-    if (!QFileInfo(localFile).isDir()) {
-        qCWarning(lcSocketApi) << "Ignoring ENCRYPT request for non-directory path:" << localFile;
-        return;
-    }
-
-    const auto fileData = FileData::get(localFile);
-
-    const auto folder = fileData.folder;
-    if (!folder) {
-        qCWarning(lcSocketApi) << "Ignoring ENCRYPT request for path outside sync root:" << localFile;
-        return;
-    }
-
-    const auto account = folder->accountState()->account();
-    if (!account) {
-        qCWarning(lcSocketApi) << "Ignoring ENCRYPT request without a valid account:" << localFile;
-        return;
-    }
-
-    const auto rec = fileData.journalRecord();
-    if (!rec.isValid()) {
-        qCWarning(lcSocketApi) << "Ignoring ENCRYPT request for path missing a valid journal record:" << localFile;
-        return;
-    }
-
-    if (!account->e2e() || !account->e2e()->isInitialized()) {
-        const int ret = QMessageBox::critical(
-            nullptr,
-            tr("Failed to encrypt folder at \"%1\"").arg(fileData.folderRelativePath),
-            tr("The account %1 does not have end-to-end encryption configured. "
-               "Please configure this in your account settings to enable folder encryption.").arg(account->prettyName()),
-            QMessageBox::Ok
-            );
-        Q_UNUSED(ret)
-        return;
-    }
-
-    auto path = rec._path;
-    // Folder records have directory paths in Foo/Bar/ convention...
-    // But EncryptFolderJob expects directory path Foo/Bar convention
-    const auto choppedPath = Utility::noTrailingSlashPath(Utility::noLeadingSlashPath(path));
-
-    auto job = new OCC::EncryptFolderJob(account, folder->journalDb(), choppedPath, choppedPath, folder->remotePath(), rec.numericFileId());
-    job->setParent(this);
-    connect(job, &OCC::EncryptFolderJob::finished, this, [fileData, job](const int status) {
-        if (status == OCC::EncryptFolderJob::Error) {
-            const int ret = QMessageBox::critical(
-                nullptr,
-                tr("Failed to encrypt folder"),
-                tr("Could not encrypt the following folder: \"%1\".\n\n"
-                   "Server replied with error: %2").arg(fileData.folderRelativePath, job->errorString()),
-                QMessageBox::Ok
-            );
-            Q_UNUSED(ret)
-        } else {
-            const int ret = QMessageBox::information(nullptr,
-                                                     tr("Folder encrypted successfully").arg(fileData.folderRelativePath),
-                                                     tr("The following folder was encrypted successfully: \"%1\"").arg(fileData.folderRelativePath));
-            Q_UNUSED(ret)
-        }
-    });
-    job->setProperty(encryptJobPropertyFolder, QVariant::fromValue(folder));
-    job->setProperty(encryptJobPropertyPath, QVariant::fromValue(path));
-    job->start();
+    Q_UNUSED(localFile)
+    qCWarning(lcSocketApi) << "Encryption is no longer supported.";
 }
 
 void SocketApi::processShareRequest(const QString &localFile, SocketListener *listener)

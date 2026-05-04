@@ -31,7 +31,7 @@ namespace OCC {
  *     binding; coverage for UNIX sockets in $TMPDIR was added in macOS 14.
  *
  * The fix is to place the socket in the app's sandboxed home directory
- * (~/Library/Containers/com.nextcloud.desktopclient/Data), which the sandbox
+ * (~/Library/Containers/org.openlist.desktopclient/Data), which the sandbox
  * has always allowed for both file I/O and UNIX socket binding.  A two-
  * character filename ("si") keeps the total path well within the 103-char
  * limit for any macOS username (max 31 chars → 96-char path total).

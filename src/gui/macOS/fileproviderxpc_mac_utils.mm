@@ -13,13 +13,13 @@
 #include "gui/accountmanager.h"
 
 namespace {
-const char *const clientCommunicationServiceName = "com.nextcloud.desktopclient.ClientCommunicationService";
+const char *const clientCommunicationServiceName = "com.openlist.desktopclient.ClientCommunicationService";
 NSString *const nsClientCommunicationServiceName = [NSString stringWithUTF8String:clientCommunicationServiceName];
 }
 
 namespace OCC::Mac::FileProviderXPCUtils {
 
-Q_LOGGING_CATEGORY(lcFileProviderXPCUtils, "nextcloud.gui.macos.fileprovider.xpc.utils", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcFileProviderXPCUtils, "openlist.gui.macos.fileprovider.xpc.utils", QtInfoMsg)
 
 NSArray<NSFileProviderManager *> *getDomainManagers()
 {

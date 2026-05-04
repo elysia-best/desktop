@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2017 OpenList contributors
 # SPDX-License-Identifier: GPL-2.0-or-later
 macro(dbus_add_activation_service _sources)
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.28.0") 

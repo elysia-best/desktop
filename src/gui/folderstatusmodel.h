@@ -122,7 +122,6 @@ public slots:
     void slotSyncAllPendingBigFolders();
     void slotSyncNoPendingBigFolders();
     void slotSetProgress(const OCC::ProgressInfo &progress);
-    void e2eInitializationFinished(bool isNewMnemonicGenerated);
 
 private slots:
     void slotUpdateDirectories(const QStringList &);

@@ -8,9 +8,7 @@
 #include "owncloudlib.h"
 #include "owncloudpropagator.h"
 #include "networkjobs.h"
-#include "clientsideencryption.h"
 #include <common/checksums.h>
-#include "foldermetadata.h"
 
 #include <QBuffer>
 #include <QFile>
@@ -18,8 +16,6 @@
 #include <filesystem>
 
 namespace OCC {
-class PropagateDownloadEncrypted;
-
 /**
  * @brief The GETFileJob class
  * @ingroup libsync
@@ -124,34 +120,6 @@ private slots:
 };
 
 /**
- * @brief The GETEncryptedFileJob class that provides file decryption on the fly while the download is running
- * @ingroup libsync
- */
-class OWNCLOUDSYNC_EXPORT GETEncryptedFileJob : public GETFileJob
-{
-    Q_OBJECT
-
-public:
-    // DOES NOT take ownership of the device.
-    explicit GETEncryptedFileJob(AccountPtr account, const QString &path, QIODevice *device,
-        const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
-        qint64 resumeStart, FolderMetadata::EncryptedFile encryptedInfo, QObject *parent = nullptr);
-    explicit GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
-        const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
-        qint64 resumeStart, FolderMetadata::EncryptedFile encryptedInfo, QObject *parent = nullptr);
-    ~GETEncryptedFileJob() override = default;
-
-protected:
-    qint64 writeToDevice(const QByteArray &data) override;
-
-private:
-    QSharedPointer<EncryptionHelper::StreamingDecryptor> _decryptor;
-    FolderMetadata::EncryptedFile _encryptedFileInfo = {};
-    QByteArray _pendingBytes;
-    qint64 _processedSoFar = 0;
-};
-
-/**
  * @brief The PropagateDownloadFile class
  * @ingroup libsync
  *
@@ -249,20 +217,15 @@ private slots:
 private:
     void startAfterIsEncryptedIsChecked();
     void deleteExistingFolder();
-    [[nodiscard]] bool isEncrypted() const { return _isEncrypted; }
 
     qint64 _resumeStart = 0;
     qint64 _downloadProgress = 0;
     QPointer<GETFileJob> _job;
     QFile _tmpFile;
     bool _deleteExisting = false;
-    bool _isEncrypted = false;
-    FolderMetadata::EncryptedFile _encryptedInfo;
     ConflictRecord _conflictRecord;
 
     QElapsedTimer _stopwatch;
-
-    PropagateDownloadEncrypted *_downloadEncryptedHelper = nullptr;
 
     std::filesystem::path _parentPath;
     bool _needParentFolderRestorePermissions = false;

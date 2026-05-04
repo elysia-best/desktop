@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 include( InstallRequiredSystemLibraries )
 
-set( CPACK_PACKAGE_CONTACT  "Dominik Schmidt <domme@tomahawk-player.org>" )
+set( CPACK_PACKAGE_CONTACT  "OpenList Team" )
 
-include("${CMAKE_SOURCE_DIR}/NEXTCLOUD.cmake")
+include("${CMAKE_SOURCE_DIR}/OPENLIST.cmake")
 
 include( VERSION.cmake )
 set( CPACK_PACKAGE_VERSION_MAJOR  ${MIRALL_VERSION_MAJOR} )

@@ -14,7 +14,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcNavPane, "nextcloud.gui.folder.navigationpane", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcNavPane, "openlist.gui.folder.navigationpane", QtInfoMsg)
 
 NavigationPaneHelper::NavigationPaneHelper(FolderMan *folderMan)
     : _folderMan(folderMan)

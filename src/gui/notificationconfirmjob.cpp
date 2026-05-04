@@ -12,7 +12,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcNotificationsJob, "nextcloud.gui.notifications", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcNotificationsJob, "openlist.gui.notifications", QtInfoMsg)
 
 NotificationConfirmJob::NotificationConfirmJob(AccountPtr account)
     : AbstractNetworkJob(account, "")

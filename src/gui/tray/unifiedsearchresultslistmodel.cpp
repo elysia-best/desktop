@@ -183,7 +183,7 @@ constexpr int searchTermEditingFinishedSearchStartDelay = 800;
 constexpr int minimumEntresNumberToShowLoadMore = 5;
 }
 namespace OCC {
-Q_LOGGING_CATEGORY(lcUnifiedSearch, "nextcloud.gui.unifiedsearch", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUnifiedSearch, "openlist.gui.unifiedsearch", QtInfoMsg)
 
 UnifiedSearchResultsListModel::UnifiedSearchResultsListModel(AccountState *accountState, QObject *parent)
     : QAbstractListModel(parent)

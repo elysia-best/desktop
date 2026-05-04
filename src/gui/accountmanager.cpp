@@ -12,7 +12,6 @@
 #include "creds/credentialsfactory.h"
 #include "creds/abstractcredentials.h"
 #include "creds/keychainchunk.h"
-#include "libsync/clientsideencryption.h"
 #include "libsync/configfile.h"
 #include "libsync/cookiejar.h"
 #include "libsync/theme.h"
@@ -72,8 +71,8 @@ constexpr auto networkProxyPasswordKeychainKeySuffixC = "_proxy_password";
 constexpr auto legacyRelativeConfigLocationC = "/ownCloud/owncloud.cfg";
 constexpr auto legacyCfgFileNameC = "owncloud.cfg";
 
-constexpr auto unbrandedRelativeConfigLocationC = "/Nextcloud/nextcloud.cfg";
-constexpr auto unbrandedCfgFileNameC = "nextcloud.cfg";
+constexpr auto unbrandedRelativeConfigLocationC = "/OpenList/openlist.cfg";
+constexpr auto unbrandedCfgFileNameC = "openlist.cfg";
 
 // The maximum versions that this client can read
 constexpr auto maxAccountsVersion = 13;
@@ -88,7 +87,7 @@ constexpr auto generalC = "General";
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcAccountManager, "nextcloud.gui.account.manager", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAccountManager, "openlist.gui.account.manager", QtInfoMsg)
 
 AccountManager *AccountManager::instance()
 {
@@ -780,9 +779,6 @@ void AccountManager::deleteAccount(OCC::AccountState *account)
 
     const auto settings = ConfigFile::settingsWithGroup(QLatin1String(accountsC));
     settings->remove(account->account()->id());
-
-    // Forget E2E keys
-    account->account()->e2e()->forgetSensitiveData();
 
     account->account()->deleteAppToken();
 

@@ -63,7 +63,7 @@ static bool compressLog(const QString &originalName, const QString &targetName)
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcPermanentLog, "nextcloud.log.permanent")
+Q_LOGGING_CATEGORY(lcPermanentLog, "openlist.log.permanent")
 
 Logger *Logger::instance()
 {
@@ -115,7 +115,7 @@ void Logger::doLog(QtMsgType type, const QMessageLogContext &ctx, const QString 
 {
     static long long int linesCounter = 0;
     const auto &msg = qFormatLogMessage(type, ctx, message);
-#if defined Q_OS_WIN && ((defined NEXTCLOUD_DEV && NEXTCLOUD_DEV) || defined QT_DEBUG)
+#if defined Q_OS_WIN && ((defined OPENLIST_DEV && OPENLIST_DEV) || defined QT_DEBUG)
     // write logs to Output window of Visual Studio
     {
         const auto msgW = QStringLiteral("%1\n").arg(msg).toStdWString();
@@ -136,7 +136,7 @@ void Logger::doLog(QtMsgType type, const QMessageLogContext &ctx, const QString 
                 _logstream->flush();
             }
             closeNoLock();
-            enterNextLogFileNoLock(QStringLiteral("nextcloud.log"), LogType::Log);
+            enterNextLogFileNoLock(QStringLiteral("openlist.log"), LogType::Log);
         }
         ++linesCounter;
 
@@ -219,7 +219,7 @@ void Logger::setLogFlush(bool flush)
 
 void Logger::setLogDebug(bool debug)
 {
-    const QSet<QString> rules = {debug ? QStringLiteral("nextcloud.*.debug=true") : QString()};
+    const QSet<QString> rules = {debug ? QStringLiteral("openlist.*.debug=true") : QString()};
     if (debug) {
         addLogRule(rules);
     } else {
@@ -256,7 +256,7 @@ void Logger::disableTemporaryFolderLogDir()
     if (!_temporaryFolderLogDir)
         return;
 
-    enterNextLogFile("nextcloud.log", LogType::Log);
+    enterNextLogFile("openlist.log", LogType::Log);
     setLogDir(QString());
     _temporaryFolderLogDir = false;
 }

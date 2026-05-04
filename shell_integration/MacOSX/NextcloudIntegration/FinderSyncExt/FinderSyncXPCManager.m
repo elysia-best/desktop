@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-FileCopyrightText: 2026 OpenList contributors
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -46,7 +46,7 @@ static os_log_t getXPCManagerLogger(void) {
         _delegate = delegate;
         _isConnected = NO;
         _statusCache = [NSMutableDictionary dictionary];
-        _connectionQueue = dispatch_queue_create("com.nextcloud.FinderSync.XPCQueue", DISPATCH_QUEUE_SERIAL);
+        _connectionQueue = dispatch_queue_create("org.openlist.FinderSync.XPCQueue", DISPATCH_QUEUE_SERIAL);
         _reconnectDelay = 1;
         _reconnectPending = NO;
     }

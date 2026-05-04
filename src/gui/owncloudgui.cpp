@@ -10,9 +10,6 @@
 #include "accountmanager.h"
 #include "accountstate.h"
 #include "application.h"
-#include "callstatechecker.h"
-#include "emojimodel.h"
-#include "fileactivitylistmodel.h"
 #include "folderman.h"
 #include "guiutility.h"
 #include "logbrowser.h"
@@ -70,7 +67,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcOwnCloudGui, "com.nextcloud.owncloudgui")
+Q_LOGGING_CATEGORY(lcOwnCloudGui, "com.openlist.owncloudgui")
 
 const char propertyAccountC[] = "oc_account";
 
@@ -128,29 +125,24 @@ ownCloudGui::ownCloudGui(Application *parent)
     connect(Logger::instance(), &Logger::guiLog, this, &ownCloudGui::slotShowTrayMessage);
     connect(Logger::instance(), &Logger::guiMessage, this, &ownCloudGui::slotShowGuiMessage);
 
-    qmlRegisterType<SyncStatusSummary>("com.nextcloud.desktopclient", 1, 0, "SyncStatusSummary");
-    qmlRegisterType<EmojiModel>("com.nextcloud.desktopclient", 1, 0, "EmojiModel");
-    qmlRegisterType<UserStatusSelectorModel>("com.nextcloud.desktopclient", 1, 0, "UserStatusSelectorModel");
-    qmlRegisterType<ActivityListModel>("com.nextcloud.desktopclient", 1, 0, "ActivityListModel");
-    qmlRegisterType<FileActivityListModel>("com.nextcloud.desktopclient", 1, 0, "FileActivityListModel");
-    qmlRegisterType<SortedActivityListModel>("com.nextcloud.desktopclient", 1, 0, "SortedActivityListModel");
-    qmlRegisterType<WheelHandler>("com.nextcloud.desktopclient", 1, 0, "WheelHandler");
-    qmlRegisterType<CallStateChecker>("com.nextcloud.desktopclient", 1, 0, "CallStateChecker");
-    qmlRegisterType<Quick::DateFieldBackend>("com.nextcloud.desktopclient", 1, 0, "DateFieldBackend");
-    qmlRegisterType<FileDetails>("com.nextcloud.desktopclient", 1, 0, "FileDetails");
-    qmlRegisterType<ShareModel>("com.nextcloud.desktopclient", 1, 0, "ShareModel");
-    qmlRegisterType<ShareeModel>("com.nextcloud.desktopclient", 1, 0, "ShareeModel");
-    qmlRegisterType<SortedShareModel>("com.nextcloud.desktopclient", 1, 0, "SortedShareModel");
-    qmlRegisterType<SyncConflictsModel>("com.nextcloud.desktopclient", 1, 0, "SyncConflictsModel");
-    qmlRegisterType<FileActionsModel>("com.nextcloud.desktopclient", 1, 0, "FileActionsModel");
+    qmlRegisterType<SyncStatusSummary>("com.openlist.desktopclient", 1, 0, "SyncStatusSummary");
+    qmlRegisterType<ActivityListModel>("com.openlist.desktopclient", 1, 0, "ActivityListModel");
+    qmlRegisterType<SortedActivityListModel>("com.openlist.desktopclient", 1, 0, "SortedActivityListModel");
+    qmlRegisterType<WheelHandler>("com.openlist.desktopclient", 1, 0, "WheelHandler");
+    qmlRegisterType<Quick::DateFieldBackend>("com.openlist.desktopclient", 1, 0, "DateFieldBackend");
+    qmlRegisterType<FileDetails>("com.openlist.desktopclient", 1, 0, "FileDetails");
+    qmlRegisterType<ShareModel>("com.openlist.desktopclient", 1, 0, "ShareModel");
+    qmlRegisterType<ShareeModel>("com.openlist.desktopclient", 1, 0, "ShareeModel");
+    qmlRegisterType<SortedShareModel>("com.openlist.desktopclient", 1, 0, "SortedShareModel");
+    qmlRegisterType<SyncConflictsModel>("com.openlist.desktopclient", 1, 0, "SyncConflictsModel");
+    qmlRegisterType<FileActionsModel>("com.openlist.desktopclient", 1, 0, "FileActionsModel");
 
-    qmlRegisterUncreatableType<QAbstractItemModel>("com.nextcloud.desktopclient", 1, 0, "QAbstractItemModel", "QAbstractItemModel");
-    qmlRegisterUncreatableType<Activity>("com.nextcloud.desktopclient", 1, 0, "activity", "Activity");
-    qmlRegisterUncreatableType<TalkNotificationData>("com.nextcloud.desktopclient", 1, 0, "talkNotificationData", "TalkNotificationData");
-    qmlRegisterUncreatableType<UnifiedSearchResultsListModel>("com.nextcloud.desktopclient", 1, 0, "UnifiedSearchResultsListModel", "UnifiedSearchResultsListModel");
-    qmlRegisterUncreatableType<UserStatus>("com.nextcloud.desktopclient", 1, 0, "userStatus", "Access to Status enum");
-    qmlRegisterUncreatableType<Sharee>("com.nextcloud.desktopclient", 1, 0, "sharee", "Access to Type enum");
-    qmlRegisterUncreatableType<ClientSideEncryptionTokenSelector>("com.nextcloud.desktopclient", 1, 0, "ClientSideEncryptionTokenSelector", "Access to the certificate selector");
+    qmlRegisterUncreatableType<QAbstractItemModel>("com.openlist.desktopclient", 1, 0, "QAbstractItemModel", "QAbstractItemModel");
+    qmlRegisterUncreatableType<Activity>("com.openlist.desktopclient", 1, 0, "activity", "Activity");
+    qmlRegisterUncreatableType<TalkNotificationData>("com.openlist.desktopclient", 1, 0, "talkNotificationData", "TalkNotificationData");
+    qmlRegisterUncreatableType<UnifiedSearchResultsListModel>("com.openlist.desktopclient", 1, 0, "UnifiedSearchResultsListModel", "UnifiedSearchResultsListModel");
+    qmlRegisterUncreatableType<UserStatus>("com.openlist.desktopclient", 1, 0, "userStatus", "Access to Status enum");
+    qmlRegisterUncreatableType<Sharee>("com.openlist.desktopclient", 1, 0, "sharee", "Access to Type enum");
 
     qRegisterMetaType<ActivityListModel *>("ActivityListModel*");
     qRegisterMetaType<UnifiedSearchResultsListModel *>("UnifiedSearchResultsListModel*");
@@ -160,13 +152,13 @@ ownCloudGui::ownCloudGui(Application *parent)
     qRegisterMetaType<Sharee>("Sharee");
     qRegisterMetaType<OCC::ActivityList>("ActivityList");
 
-    qmlRegisterSingletonInstance("com.nextcloud.desktopclient", 1, 0, "UserModel", UserModel::instance());
-    qmlRegisterSingletonInstance("com.nextcloud.desktopclient", 1, 0, "UserAppsModel", UserAppsModel::instance());
-    qmlRegisterSingletonInstance("com.nextcloud.desktopclient", 1, 0, "Theme", Theme::instance());
-    qmlRegisterSingletonInstance("com.nextcloud.desktopclient", 1, 0, "Systray", Systray::instance());
+    qmlRegisterSingletonInstance("com.openlist.desktopclient", 1, 0, "UserModel", UserModel::instance());
+    qmlRegisterSingletonInstance("com.openlist.desktopclient", 1, 0, "UserAppsModel", UserAppsModel::instance());
+    qmlRegisterSingletonInstance("com.openlist.desktopclient", 1, 0, "Theme", Theme::instance());
+    qmlRegisterSingletonInstance("com.openlist.desktopclient", 1, 0, "Systray", Systray::instance());
 
 #ifdef BUILD_FILE_PROVIDER_MODULE
-    qmlRegisterSingletonInstance("com.nextcloud.desktopclient", 1, 0, "FileProviderSettingsController", Mac::FileProviderSettingsController::instance());
+    qmlRegisterSingletonInstance("com.openlist.desktopclient", 1, 0, "FileProviderSettingsController", Mac::FileProviderSettingsController::instance());
 #endif
 }
 
@@ -256,7 +248,7 @@ void ownCloudGui::slotSyncStateChange(Folder *folder)
         || result.status() == SyncResult::Problem
         || result.status() == SyncResult::SyncAbortRequested
         || result.status() == SyncResult::Error) {
-        Logger::instance()->enterNextLogFile(QStringLiteral("nextcloud.log"), OCC::Logger::LogType::Log);
+        Logger::instance()->enterNextLogFile(QStringLiteral("openlist.log"), OCC::Logger::LogType::Log);
     }
 }
 
@@ -456,7 +448,7 @@ void ownCloudGui::slotComputeOverallSyncStatus()
                                                                        folder->syncResult().hasUnresolvedConflicts(),
                                                                        folder->syncPaused(),
                                                                        folder->syncEngine().progressInfo());
-            //: Example text: "Nextcloud: Syncing 25MB (3 minutes left)"   (%1 is the folder name to be synced, %2 a status message for that folder)
+            //: Example text: "OpenList: Syncing 25MB (3 minutes left)"   (%1 is the folder name to be synced, %2 a status message for that folder)
             allStatusStrings += tr("%1: %2").arg(folder->shortGuiLocalPath(), folderMessage);
         }
 #ifdef BUILD_FILE_PROVIDER_MODULE

@@ -24,7 +24,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcUpdater, "nextcloud.gui.updater", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUpdater, "openlist.gui.updater", QtInfoMsg)
 
 Updater *Updater::_instance = nullptr;
 

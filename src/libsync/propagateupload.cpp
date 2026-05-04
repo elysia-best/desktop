@@ -20,8 +20,6 @@
 #include "deletejob.h"
 #include "common/asserts.h"
 #include "networkjobs.h"
-#include "clientsideencryption.h"
-#include "clientsideencryptionjobs.h"
 
 #include <QNetworkAccessManager>
 #include <QFileInfo>
@@ -35,12 +33,12 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcPutJob, "nextcloud.sync.networkjob.put", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcUploadDevice, "nextcloud.sync.uploaddevice", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPollJob, "nextcloud.sync.networkjob.poll", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropagateUpload, "nextcloud.sync.propagator.upload", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropagateUploadV1, "nextcloud.sync.propagator.upload.v1", QtInfoMsg)
-Q_LOGGING_CATEGORY(lcPropagateUploadNG, "nextcloud.sync.propagator.upload.ng", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPutJob, "openlist.sync.networkjob.put", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcUploadDevice, "openlist.sync.uploaddevice", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPollJob, "openlist.sync.networkjob.poll", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateUpload, "openlist.sync.propagator.upload", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateUploadV1, "openlist.sync.propagator.upload.v1", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcPropagateUploadNG, "openlist.sync.propagator.upload.ng", QtInfoMsg)
 
 PUTFileJob::~PUTFileJob()
 {
@@ -770,46 +768,16 @@ QMap<QByteArray, QByteArray> PropagateUploadFileCommon::headers()
     if (_item->_modtime <= 0) {
         qCWarning(lcPropagateUpload()) << "invalid modified time" << _item->_file << _item->_modtime;
     }
+    // Use the standard X-OC-Mtime header for mtime preservation; OpenList's
+    // WebDAV layer honours it for compatibility with the ownCloud/Nextcloud
+    // ecosystem.
     headers[QByteArrayLiteral("X-OC-Mtime")] = QByteArray::number(qint64(_item->_modtime));
-    if (qEnvironmentVariableIntValue("OWNCLOUD_LAZYOPS"))
-        headers[QByteArrayLiteral("OC-LazyOps")] = QByteArrayLiteral("true");
-
-    if (_item->_file.contains(QLatin1String(".sys.admin#recall#"))) {
-        // This is a file recall triggered by the admin.  Note: the
-        // recall list file created by the admin and downloaded by the
-        // client (.sys.admin#recall#) also falls into this category
-        // (albeit users are not supposed to mess up with it)
-
-        // We use a special tag header so that the server may decide to store this file away in some admin stage area
-        // And not directly in the user's area (which would trigger redownloads etc).
-        headers["OC-Tag"] = ".sys.admin#recall#";
-    }
 
     if (!_item->_etag.isEmpty() && _item->_etag != "empty_etag"
         && _item->_instruction != CSYNC_INSTRUCTION_NEW // On new files never send a If-Match
         && _item->_instruction != CSYNC_INSTRUCTION_TYPE_CHANGE
         && !_deleteExisting) {
-        // We add quotes because the owncloud server always adds quotes around the etag, and
-        //  csync_owncloud.c's owncloud_file_id always strips the quotes.
         headers[QByteArrayLiteral("If-Match")] = '"' + _item->_etag + '"';
-    }
-
-    // Set up a conflict file header pointing to the original file
-    auto conflictRecord = propagator()->_journal->conflictRecord(_item->_file.toUtf8());
-    if (conflictRecord.isValid()) {
-        headers[QByteArrayLiteral("OC-Conflict")] = "1";
-        if (!conflictRecord.initialBasePath.isEmpty())
-            headers[QByteArrayLiteral("OC-ConflictInitialBasePath")] = conflictRecord.initialBasePath;
-        if (!conflictRecord.baseFileId.isEmpty())
-            headers[QByteArrayLiteral("OC-ConflictBaseFileId")] = conflictRecord.baseFileId;
-        if (conflictRecord.baseModtime != -1)
-            headers[QByteArrayLiteral("OC-ConflictBaseMtime")] = QByteArray::number(conflictRecord.baseModtime);
-        if (!conflictRecord.baseEtag.isEmpty())
-            headers[QByteArrayLiteral("OC-ConflictBaseEtag")] = conflictRecord.baseEtag;
-    }
-
-    if (_uploadEncryptedHelper && !_uploadEncryptedHelper->folderToken().isEmpty()) {
-        headers.insert("e2e-token", _uploadEncryptedHelper->folderToken());
     }
 
     return headers;

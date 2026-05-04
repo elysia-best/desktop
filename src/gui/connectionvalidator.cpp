@@ -23,7 +23,7 @@
 
 namespace OCC {
 
-Q_LOGGING_CATEGORY(lcConnectionValidator, "nextcloud.sync.connectionvalidator", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcConnectionValidator, "openlist.sync.connectionvalidator", QtInfoMsg)
 
 // Make sure the timeout for this job is less than how often we get called
 // This makes sure we get tried often enough without "ConnectionValidator already running"
@@ -120,7 +120,7 @@ void ConnectionValidator::slotStatusFound(const QUrl &url, const QJsonObject &in
     QString serverVersion = CheckServerJob::version(info);
 
     // status.php was found.
-    qCInfo(lcConnectionValidator) << "** Application: Nextcloud found: "
+    qCInfo(lcConnectionValidator) << "** Application: OpenList found: "
                                   << url << " with version "
                                   << CheckServerJob::versionString(info)
                                   << "(" << serverVersion << ")";
@@ -247,8 +247,8 @@ void ConnectionValidator::slotAuthSuccess()
 
 void ConnectionValidator::checkServerCapabilities()
 {
-    // The main flow now needs the capabilities
-    auto *job = new JsonApiJob(_account, QLatin1String("ocs/v1.php/cloud/capabilities"), this);
+    // Fetch OpenList public settings to determine server features
+    auto *job = new JsonApiJob(_account, QLatin1String("/api/public/settings"), this);
     job->setTimeout(timeoutToUseMsec);
     QObject::connect(job, &JsonApiJob::jsonReceived, this, &ConnectionValidator::slotCapabilitiesRecieved);
     job->start();
@@ -256,21 +256,18 @@ void ConnectionValidator::checkServerCapabilities()
 
 void ConnectionValidator::slotCapabilitiesRecieved(const QJsonDocument &json)
 {
-    auto caps = json.object().value("ocs").toObject().value("data").toObject().value("capabilities").toObject();
-    qCInfo(lcConnectionValidator) << "Server capabilities" << caps;
-    _account->setCapabilities(caps.toVariantMap());
+    // OpenList returns settings directly as a JSON object (not wrapped in OCS format)
+    auto settings = json.object().toVariantMap();
+    qCInfo(lcConnectionValidator) << "OpenList server settings" << settings;
+    _account->setCapabilities(settings);
 
-    // New servers also report the version in the capabilities
-    QString serverVersion = caps["core"].toObject()["status"].toObject()["version"].toString();
+    // Extract server version from the settings response
+    QString serverVersion = settings.value(QStringLiteral("version")).toString();
     if (!serverVersion.isEmpty() && !setAndCheckServerVersion(serverVersion)) {
         return;
     }
 
-    // Check for the directEditing capability
-    QUrl directEditingURL = QUrl(caps["files"].toObject()["directEditing"].toObject()["url"].toString());
-    QString directEditingETag = caps["files"].toObject()["directEditing"].toObject()["etag"].toString();
-    _account->fetchDirectEditors(directEditingURL, directEditingETag);
-
+    // OpenList does not support direct editing or terms of service checks
     checkServerTermsOfService();
 
     if (_account->isPublicShareLink()) {
@@ -325,12 +322,7 @@ void ConnectionValidator::slotUserFetched(UserInfo *userInfo)
         userInfo->deleteLater();
     }
 
-#ifndef TOKEN_AUTH_ONLY
-    connect(_account->e2e(), &ClientSideEncryption::initializationFinished, this, &ConnectionValidator::reportConnected);
-    _account->e2e()->initialize(nullptr);
-#else
     reportResult(Connected);
-#endif
 }
 
 void ConnectionValidator::termsOfServiceCheckDone()
@@ -342,12 +334,6 @@ void ConnectionValidator::termsOfServiceCheckDone()
 
     fetchUser();
 }
-
-#ifndef TOKEN_AUTH_ONLY
-void ConnectionValidator::reportConnected() {
-    reportResult(Connected);
-}
-#endif
 
 void ConnectionValidator::reportResult(Status status)
 {

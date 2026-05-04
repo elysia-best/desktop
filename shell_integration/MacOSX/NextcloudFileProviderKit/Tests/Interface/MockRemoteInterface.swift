@@ -1,4 +1,4 @@
-//  SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+//  SPDX-FileCopyrightText: 2024 OpenList contributors
 //  SPDX-License-Identifier: LGPL-3.0-or-later
 
 import Alamofire
@@ -525,8 +525,8 @@ let mockCapabilities = ##"""
           "enabled": true
         },
         "theming": {
-          "name": "Nextcloud",
-          "url": "https://nextcloud.com",
+          "name": "OpenList",
+          "url": "https://oplist.org",
           "slogan": "a safe home for all your data",
           "color": "#6ea68f",
           "color-text": "#000000",

@@ -16,7 +16,6 @@
 #include "config.h"
 #include "folderman.h"
 #include "libsync/vfs/cfapi/shellext/configvfscfapishellext.h"
-#include "ocssharejob.h"
 #include "shellextensionsserver.h"
 #include "syncengine.h"
 #include "syncenginetestutils.h"
