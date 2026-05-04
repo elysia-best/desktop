@@ -5,8 +5,6 @@
  */
 
 #include "propagateremotedelete.h"
-#include "propagateremotedeleteencrypted.h"
-#include "propagateremotedeleteencryptedrootfolder.h"
 #include "owncloudpropagator_p.h"
 #include "account.h"
 #include "deletejob.h"
@@ -26,27 +24,7 @@ void PropagateRemoteDelete::start()
     if (propagator()->_abortRequested)
         return;
 
-    if (!_item->_encryptedFileName.isEmpty() || _item->isEncrypted()) {
-        if (!_item->_encryptedFileName.isEmpty()) {
-            _deleteEncryptedHelper = new PropagateRemoteDeleteEncrypted(propagator(), _item, this);
-        } else {
-            _deleteEncryptedHelper = new PropagateRemoteDeleteEncryptedRootFolder(propagator(), _item, this);
-        }
-        connect(_deleteEncryptedHelper, &BasePropagateRemoteDeleteEncrypted::finished, this, [this] (bool success) {
-            if (!success) {
-                SyncFileItem::Status status = SyncFileItem::NormalError;
-                if (_deleteEncryptedHelper->networkError() != QNetworkReply::NoError && _deleteEncryptedHelper->networkError() != QNetworkReply::ContentNotFoundError) {
-                    status = classifyError(_deleteEncryptedHelper->networkError(), _item->_httpErrorCode, &propagator()->_anotherSyncNeeded);
-                }
-                done(status, _deleteEncryptedHelper->errorString(), ErrorCategory::GenericError);
-            } else {
-                done(SyncFileItem::Success, {}, ErrorCategory::NoError);
-            }
-        });
-        _deleteEncryptedHelper->start();
-    } else {
-        createDeleteJob(_item->_file);
-    }
+    createDeleteJob(_item->_file);
 }
 
 void PropagateRemoteDelete::createDeleteJob(const QString &filename)

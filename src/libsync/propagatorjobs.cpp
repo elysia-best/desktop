@@ -5,7 +5,6 @@
  */
 
 #include "account.h"
-#include "propagatedownloadencrypted.h"
 #include "propagatorjobs.h"
 #include "owncloudpropagator.h"
 #include "owncloudpropagator_p.h"

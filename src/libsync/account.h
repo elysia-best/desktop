@@ -28,6 +28,7 @@
 #include <QSharedPointer>
 #include <QHttpMultiPart>
 #include <QTimer>
+#include <QPromise>
 
 #ifndef TOKEN_AUTH_ONLY
 #include <QPixmap>

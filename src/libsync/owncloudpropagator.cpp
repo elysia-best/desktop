@@ -220,8 +220,6 @@ void PropagateItemJob::done(const SyncFileItem::Status statusArg, const QString 
 
     _item->_status = statusArg;
 
-    reportClientStatuses();
-
     if (_item->_isRestoration) {
         if (_item->_status == SyncFileItem::Success
             || _item->_status == SyncFileItem::Conflict) {
@@ -308,32 +306,6 @@ bool PropagateItemJob::hasEncryptedAncestor() const
     SyncJournalFileRecord rec;
     return propagator()->_journal->findEncryptedAncestorForRecord(_item->_file, &rec)
         && rec.isValid() && rec.isE2eEncrypted();
-}
-
-void PropagateItemJob::reportClientStatuses()
-{
-    if (_item->_status == SyncFileItem::Status::FileNameClash) {
-        if (_item->_direction != SyncFileItem::Direction::Up) {
-            propagator()->account()->reportClientStatus(ClientStatusReportingStatus::DownloadError_ConflictInvalidCharacters);
-        }
-    } else if (_item->_status == SyncFileItem::Status::FileNameInvalid) {
-        propagator()->account()->reportClientStatus(ClientStatusReportingStatus::DownloadError_ConflictInvalidCharacters);
-    } else if (_item->_httpErrorCode != HttpErrorCodeNone && _item->_httpErrorCode != HttpErrorCodeSuccess
-               && _item->_httpErrorCode != HttpErrorCodeSuccessCreated && _item->_httpErrorCode != HttpErrorCodeSuccessNoContent) {
-        if (_item->_direction == SyncFileItem::Up) {
-            const auto isCodeBadReqOrUnsupportedMediaType =
-                (_item->_httpErrorCode == HttpErrorCodeBadRequest || _item->_httpErrorCode == HttpErrorCodeUnsupportedMediaType);
-            const auto isExceptionInfoPresent = !_item->_errorExceptionName.isEmpty() && !_item->_errorExceptionMessage.isEmpty();
-            if (isCodeBadReqOrUnsupportedMediaType && isExceptionInfoPresent && _item->_errorExceptionName.contains(QStringLiteral("UnsupportedMediaType"))
-                && _item->_errorExceptionMessage.contains(QStringLiteral("virus"), Qt::CaseInsensitive)) {
-                propagator()->account()->reportClientStatus(ClientStatusReportingStatus::UploadError_Virus_Detected);
-            } else {
-                propagator()->account()->reportClientStatus(ClientStatusReportingStatus::UploadError_ServerError);
-            }
-        } else {
-            propagator()->account()->reportClientStatus(ClientStatusReportingStatus::DownloadError_ServerError);
-        }
-    }
 }
 
 // ================================================================================
@@ -1007,7 +979,6 @@ OCC::Optional<QString> OwncloudPropagator::createCaseClashConflict(const SyncFil
     }
 
     _journal->setCaseConflictRecord(conflictRecord);
-    account()->reportClientStatus(ClientStatusReportingStatus::DownloadError_ConflictCaseClash);
 
     // Need a new sync to detect the created copy of the conflicting file
     _anotherSyncNeeded = true;

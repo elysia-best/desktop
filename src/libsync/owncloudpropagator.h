@@ -187,8 +187,6 @@ protected slots:
     void slotRestoreJobFinished(OCC::SyncFileItem::Status status);
 
 private:
-    void reportClientStatuses();
-
     QScopedPointer<PropagateItemJob> _restoreJob;
     JobParallelism _parallelism = FullParallelism;
 
