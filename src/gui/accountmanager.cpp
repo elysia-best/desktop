@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "accountmanager.h"
-
 #include "config.h"
+#include "accountmanager.h"
 #include "sslerrordialog.h"
 #include "proxyauthhandler.h"
 #include "creds/credentialsfactory.h"
