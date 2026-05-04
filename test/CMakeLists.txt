@@ -122,7 +122,7 @@ elseif(LINUX) # elseif(LINUX OR APPLE)
 endif()
 
 openlist_add_test(LongPath)
-nextcloud_add_benchmark(LargeSync)
+openlist_add_benchmark(LargeSync)
 
 openlist_add_test(Account)
 openlist_add_test(Folder)

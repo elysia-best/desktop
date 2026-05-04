@@ -11,7 +11,7 @@
         <file alias="theme/colored/@APPLICATION_ICON_NAME@-icon-1024.png">theme/colored/1024-@APPLICATION_ICON_NAME@-icon.png</file>
 
 		<!-- client state icons (colored) -->
-		<!-- @STATE_SUBDIR@ to switch between Nextcloud and neutral icons -->
+		<!-- @STATE_SUBDIR@ to switch between OpenList and neutral icons -->
 		<file alias="theme/colored/state-error.svg">theme/colored/@STATE_SUBDIR@state-error.svg</file>
 		<file alias="theme/colored/state-error-16.png">theme/colored/@STATE_SUBDIR@state-error-16.png</file>
 		<file alias="theme/colored/state-error-32.png">theme/colored/@STATE_SUBDIR@state-error-32.png</file>

@@ -584,7 +584,7 @@ QString Utility::getCurrentUserName()
     return QString::fromWCharArray(username);
 }
 
-void Utility::registerUriHandlerForLocalEditing() { /* URI handler is registered via Nextcloud.wxs */ }
+void Utility::registerUriHandlerForLocalEditing() { /* URI handler is registered via OpenList.wxs */ }
 
 Utility::NtfsPermissionLookupRAII::NtfsPermissionLookupRAII()
 {

@@ -48,7 +48,7 @@ if (LINUX)
 
     generate_export_header(openlistsync_vfs_xattr
         BASE_NAME openlistsync_vfs_xattr
-        EXPORT_MACRO_NAME NEXTCLOUD_XATTR_EXPORT
+        EXPORT_MACRO_NAME OPENLIST_XATTR_EXPORT
         EXPORT_FILE_NAME xattrexport.h
     )
 

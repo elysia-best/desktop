@@ -690,9 +690,9 @@ bool Account::serverHasMountRootProperty() const
         return false;
     }
 
-    return serverVersionInt() >= Account::makeServerVersion(NEXTCLOUD_SERVER_VERSION_MOUNT_ROOT_PROPERTY_SUPPORTED_MAJOR,
-                                                            NEXTCLOUD_SERVER_VERSION_MOUNT_ROOT_PROPERTY_SUPPORTED_MINOR,
-                                                            NEXTCLOUD_SERVER_VERSION_MOUNT_ROOT_PROPERTY_SUPPORTED_PATCH);
+    return serverVersionInt() >= Account::makeServerVersion(OPENLIST_SERVER_VERSION_MOUNT_ROOT_PROPERTY_SUPPORTED_MAJOR,
+                                                            OPENLIST_SERVER_VERSION_MOUNT_ROOT_PROPERTY_SUPPORTED_MINOR,
+                                                            OPENLIST_SERVER_VERSION_MOUNT_ROOT_PROPERTY_SUPPORTED_PATCH);
 }
 
 bool Account::serverVersionUnsupported() const
@@ -701,8 +701,8 @@ bool Account::serverVersionUnsupported() const
         // not detected yet, assume it is fine.
         return false;
     }
-    return serverVersionInt() < makeServerVersion(NEXTCLOUD_SERVER_VERSION_MIN_SUPPORTED_MAJOR,
-               NEXTCLOUD_SERVER_VERSION_MIN_SUPPORTED_MINOR, NEXTCLOUD_SERVER_VERSION_MIN_SUPPORTED_PATCH);
+    return serverVersionInt() < makeServerVersion(OPENLIST_SERVER_VERSION_MIN_SUPPORTED_MAJOR,
+               OPENLIST_SERVER_VERSION_MIN_SUPPORTED_MINOR, OPENLIST_SERVER_VERSION_MIN_SUPPORTED_PATCH);
 }
 
 bool Account::secureFileDropSupported() const
@@ -711,9 +711,9 @@ bool Account::secureFileDropSupported() const
         // not detected yet, assume it is fine.
         return true;
     }
-    return serverVersionInt() >= makeServerVersion(NEXTCLOUD_SERVER_VERSION_SECURE_FILEDROP_MIN_SUPPORTED_MAJOR,
-                                                   NEXTCLOUD_SERVER_VERSION_SECURE_FILEDROP_MIN_SUPPORTED_MINOR,
-                                                   NEXTCLOUD_SERVER_VERSION_SECURE_FILEDROP_MIN_SUPPORTED_PATCH);
+    return serverVersionInt() >= makeServerVersion(OPENLIST_SERVER_VERSION_SECURE_FILEDROP_MIN_SUPPORTED_MAJOR,
+                                                   OPENLIST_SERVER_VERSION_SECURE_FILEDROP_MIN_SUPPORTED_MINOR,
+                                                   OPENLIST_SERVER_VERSION_SECURE_FILEDROP_MIN_SUPPORTED_PATCH);
 }
 
 bool Account::isUsernamePrefillSupported() const

@@ -373,7 +373,7 @@ endif()
 
 if(LINUX AND BUILD_CLIENT)
     set(bindir ${CMAKE_INSTALL_FULL_BINDIR})
-    configure_file(systemd/nextcloud-desktop.service.in "${CMAKE_CURRENT_BINARY_DIR}/${LINUX_APPLICATION_ID}.service")
+    configure_file(systemd/openlist-desktop.service.in "${CMAKE_CURRENT_BINARY_DIR}/${LINUX_APPLICATION_ID}.service")
 
     pkg_check_modules(SYSTEMD systemd IMPORTED_TARGET)
     set_package_properties(systemd PROPERTIES

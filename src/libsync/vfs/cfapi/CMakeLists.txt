@@ -41,7 +41,7 @@ if (WIN32)
 
     generate_export_header(openlistsync_vfs_cfapi
         BASE_NAME openlistsync_vfs_cfapi
-        EXPORT_MACRO_NAME NEXTCLOUD_CFAPI_EXPORT
+        EXPORT_MACRO_NAME OPENLIST_CFAPI_EXPORT
         EXPORT_FILE_NAME cfapiexport.h
     )
 

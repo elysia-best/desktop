@@ -106,7 +106,7 @@ private slots:
         ConfigFile cfg;
         QSettings settings(cfg.configFile(), QSettings::IniFormat);
         const auto downloadedUpdateFilePath = settings.value("Updater/updateAvailable"_L1).toString(); // anonymous const in ocupdater.cpp
-        const auto expectedUpdateFilePath = FileSystem::joinPath(cfg.configPath(), "Nextcloud.msi");
+        const auto expectedUpdateFilePath = FileSystem::joinPath(cfg.configPath(), "OpenList.msi");
         QCOMPARE(downloadedUpdateFilePath, expectedUpdateFilePath);
         QFile updateFile(expectedUpdateFilePath);
         QVERIFY(updateFile.open(QIODevice::ReadOnly));

@@ -284,7 +284,7 @@ IF( APPLE )
 
     if (BUILD_FILE_PROVIDER_MODULE)
         list(APPEND client_SRCS
-            # XPC Protocol files from shell_integration/MacOSX/NextcloudIntegration/
+            # XPC Protocol files from shell_integration/MacOSX/OpenListIntegration/
             macOS/AppProtocol.h
             macOS/ClientCommunicationProtocol.h
             # End of XPC protocol files
