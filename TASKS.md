@@ -106,10 +106,23 @@ Migrating Nextcloud Desktop Client to OpenList Desktop Client
 - [x] pushnotificationstestutils removed
 - [x] Remaining test files cleaned of deleted includes
 
+### Phase 10 – CI/CD Release Workflows ✓
+- [x] release.yml created with `workflow_dispatch` (manual) and tag-push (`v*`) triggers
+- [x] Linux AppImage build job (reuses build-appimage.sh in Docker container)
+- [x] macOS DMG build job (Craft + CPack DragNDrop)
+- [x] Windows MSI build job (Craft + CPack WIX, falls back to NSIS exe)
+- [x] GitHub Release job: aggregates all platform artifacts, uploads via `softprops/action-gh-release`
+- [x] Prerelease auto-detection (rc/beta/alpha in tag name)
+- [x] Auto-generated release notes via GitHub API
+- [x] Manual trigger supports per-platform checkboxes and version suffix override
+- [ ] Container images need migration: `ghcr.io/nextcloud/*` → `ghcr.io/openlist/*`
+- [ ] Craft blueprint repos need creation: `openlist/craft-blueprints-kde.git`, `openlist/desktop-client-blueprints.git`
+- [ ] Craft package name `openlist-client` needs verification
+
 ---
 
 ## Summary
-- **347 files changed**: 646 insertions, 21,900+ deletions
+- **348 files changed**: 646 insertions, 21,900+ deletions
 - **89 source files deleted** (E2EE, OCS, Nextcloud-specific features)
-- **All 9 phases completed**
-- **Remaining work**: Physical directory renames (MacOSX/NextcloudIntegration/ etc.), translations (~80 .ts files), Swift package imports (external dependencies)
+- **All 10 phases completed**
+- **Remaining work**: Physical directory renames (MacOSX/NextcloudIntegration/ etc.), translations (~80 .ts files), Swift package imports (external dependencies), CI container images & Craft blueprints for OpenList
