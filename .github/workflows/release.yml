@@ -5,7 +5,9 @@ name: Release Build
 
 on:
   push:
-    tags: ['v*']
+    branches:
+      - master
+    # tags: ['v*']
   workflow_dispatch:
     inputs:
       build_linux:
@@ -265,51 +267,51 @@ jobs:
           overwrite: true
 
   # ── GitHub Release ──────────────────────────────────────────────
-  github-release:
-    name: Create GitHub Release
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [linux-appimage, macos-dmg, windows-msi]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
+  # github-release:
+  #   name: Create GitHub Release
+  #   if: startsWith(github.ref, 'refs/tags/')
+  #   needs: [linux-appimage, macos-dmg, windows-msi]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@9589b46f2c19573e6f74b23bdfe5854867513eae # v7.0.1
-        with:
-          path: artifacts
+  #     - name: Download all artifacts
+  #       uses: actions/download-artifact@9589b46f2c19573e6f74b23bdfe5854867513eae # v7.0.1
+  #       with:
+  #         path: artifacts
 
-      - name: Display artifact structure
-        run: find artifacts -type f -ls
+  #     - name: Display artifact structure
+  #       run: find artifacts -type f -ls
 
-      - name: Generate changelog URL
-        id: changelog
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            echo "url=https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "url=https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-          fi
+  #     - name: Generate changelog URL
+  #       id: changelog
+  #       run: |
+  #         PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+  #         if [ -n "$PREV_TAG" ]; then
+  #           echo "url=https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+  #         else
+  #           echo "url=https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+  #         fi
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@5e5d70e5f4c0efa6ae9dc99ac791e70e3bdc39a2 # v2.2.3
-        with:
-          name: OpenList Desktop Client ${{ github.ref_name }}
-          body: |
-            ## Downloads
-            - **Linux**: AppImage (x86_64)
-            - **macOS**: DMG (Apple Silicon)
-            - **Windows**: MSI Installer (x64)
+  #     - name: Create GitHub Release
+  #       uses: softprops/action-gh-release@5e5d70e5f4c0efa6ae9dc99ac791e70e3bdc39a2 # v2.2.3
+  #       with:
+  #         name: OpenList Desktop Client ${{ github.ref_name }}
+  #         body: |
+  #           ## Downloads
+  #           - **Linux**: AppImage (x86_64)
+  #           - **macOS**: DMG (Apple Silicon)
+  #           - **Windows**: MSI Installer (x64)
 
-            See the [full changelog](${{ steps.changelog.outputs.url }}) for details.
-          files: |
-            artifacts/openlist-linux-appimage/*
-            artifacts/openlist-macos-dmg/*
-            artifacts/openlist-windows-installer/*
-          draft: false
-          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          generate_release_notes: true
+  #           See the [full changelog](${{ steps.changelog.outputs.url }}) for details.
+  #         files: |
+  #           artifacts/openlist-linux-appimage/*
+  #           artifacts/openlist-macos-dmg/*
+  #           artifacts/openlist-windows-installer/*
+  #         draft: false
+  #         prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+  #         generate_release_notes: true
