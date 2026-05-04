@@ -18,6 +18,7 @@
 #include <QBuffer>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QMetaObject>
 
 #include "QProgressIndicator.h"
