@@ -198,6 +198,16 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install inkscape
+        shell: pwsh
+        run: choco install inkscape
+
+      - name: Setup PATH
+        shell: pwsh
+        run: |
+          echo "C:\Program Files\Inkscape\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       - name: Install Craft Master with OpenList Client Deps
         shell: pwsh
         run: |
@@ -211,7 +221,7 @@ jobs:
           craft --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo
           craft --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo
           craft craft
-          craft --install-deps nextcloud-client  # TODO: Verify Craft package name
+          craft --install-deps nextcloud-client  # TODO: Rename to openlist-client after OpenList Craft blueprints exist
 
       - name: Build nextcloud-client
         shell: pwsh
@@ -220,7 +230,7 @@ jobs:
               python "${{ env.CRAFT_MASTER_LOCATION }}\CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c $args
               if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
           }
-          craft --src-dir ${{ github.workspace }} nextcloud-client  # TODO: Verify Craft package name
+          craft --src-dir ${{ github.workspace }} nextcloud-client  # TODO: Rename to openlist-client after OpenList Craft blueprints exist
 
       - name: Package MSI
         shell: pwsh
