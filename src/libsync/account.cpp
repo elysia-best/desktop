@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "config.h"
 #include "account.h"
 #include "accessmanager.h"
 #include "accountfwd.h"
@@ -22,7 +23,6 @@
 
 #include "common/syncjournaldb.h"
 #include "common/asserts.h"
-#include "config.h"
 
 #include <QLoggingCategory>
 #include <QNetworkReply>

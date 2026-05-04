@@ -38,7 +38,7 @@
 		AA7F17E12E7017230000E928 /* Authentication.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA7F17E02E7017230000E928 /* Authentication.storyboard */; };
 		AA7F17E32E70173E0000E928 /* AuthenticationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7F17E22E70173E0000E928 /* AuthenticationViewController.swift */; };
 		AA7F17E72E7038370000E928 /* NSError+FileProviderErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7F17E62E7038340000E928 /* NSError+FileProviderErrorCode.swift */; };
-		AA9987862E72B6EF00B2C428 /* NextcloudKit+clearAccountErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9987852E72B6DB00B2C428 /* NextcloudKit+clearAccountErrorState.swift */; };
+		AA9987862E72B6EF00B2C428 /* OpenListKit+clearAccountErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9987852E72B6DB00B2C428 /* OpenListKit+clearAccountErrorState.swift */; };
 		AAA69D932E3BB09900BBD44D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AAA69D922E3BB09900BBD44D /* Localizable.xcstrings */; };
 		AAA6F1792F1E608000FFB2BA /* FileProviderExtension+ChangeNotificationInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA6F1782F1E607B00FFB2BA /* FileProviderExtension+ChangeNotificationInterface.swift */; };
 		AAA6F17D2F1E647D00FFB2BA /* FileProviderExtension+NSFileProviderServiceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA6F17C2F1E647800FFB2BA /* FileProviderExtension+NSFileProviderServiceSource.swift */; };
@@ -135,7 +135,7 @@
 		AA7F17E22E70173E0000E928 /* AuthenticationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewController.swift; sourceTree = "<group>"; };
 		AA7F17E62E7038340000E928 /* NSError+FileProviderErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+FileProviderErrorCode.swift"; sourceTree = "<group>"; };
 		AA826BEE2E8EAA7500CE49C4 /* Build.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.xcconfig; sourceTree = "<group>"; };
-		AA9987852E72B6DB00B2C428 /* NextcloudKit+clearAccountErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NextcloudKit+clearAccountErrorState.swift"; sourceTree = "<group>"; };
+		AA9987852E72B6DB00B2C428 /* OpenListKit+clearAccountErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenListKit+clearAccountErrorState.swift"; sourceTree = "<group>"; };
 		AAA69D922E3BB09900BBD44D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		AAA6F1782F1E607B00FFB2BA /* FileProviderExtension+ChangeNotificationInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileProviderExtension+ChangeNotificationInterface.swift"; sourceTree = "<group>"; };
 		AAA6F17C2F1E647800FFB2BA /* FileProviderExtension+NSFileProviderServiceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileProviderExtension+NSFileProviderServiceSource.swift"; sourceTree = "<group>"; };
@@ -213,7 +213,7 @@
 		5352E85929B7BFB4002CE85C /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				AA9987852E72B6DB00B2C428 /* NextcloudKit+clearAccountErrorState.swift */,
+				AA9987852E72B6DB00B2C428 /* OpenListKit+clearAccountErrorState.swift */,
 				AA7F17E62E7038340000E928 /* NSError+FileProviderErrorCode.swift */,
 			);
 			path = Extensions;
@@ -733,7 +733,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA9987862E72B6EF00B2C428 /* NextcloudKit+clearAccountErrorState.swift in Sources */,
+				AA9987862E72B6EF00B2C428 /* OpenListKit+clearAccountErrorState.swift in Sources */,
 				AAA6F17D2F1E647D00FFB2BA /* FileProviderExtension+NSFileProviderServiceSource.swift in Sources */,
 				53ED473029C9CE0B00795DB1 /* FileProviderExtension+NSFileProviderServicing.swift in Sources */,
 				AAA6F1792F1E608000FFB2BA /* FileProviderExtension+ChangeNotificationInterface.swift in Sources */,

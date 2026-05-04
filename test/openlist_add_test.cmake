@@ -4,7 +4,7 @@ find_package(Qt6 ${REQUIRED_QT_VERSION} COMPONENTS REQUIRED Core Test Xml Networ
 # SPDX-FileCopyrightText: 2012 ownCloud GmbH
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-macro(nextcloud_build_test test_class)
+macro(openlist_build_test test_class)
     set(CMAKE_AUTOMOC TRUE)
     set(OWNCLOUD_TEST_CLASS ${test_class})
     string(TOLOWER "${OWNCLOUD_TEST_CLASS}" OWNCLOUD_TEST_CLASS_LOWERCASE)
@@ -15,7 +15,7 @@ macro(nextcloud_build_test test_class)
     target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE
       OpenList::sync
       testutils
-      nextcloudCore
+      openlistCore
       cmdCore
       Qt::Test
       Qt::Quick
@@ -23,9 +23,9 @@ macro(nextcloud_build_test test_class)
     )
 
     if (WIN32)
-        target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE nextcloudsync_vfs_cfapi)
+        target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE openlistsync_vfs_cfapi)
     elseif (LINUX)
-        target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE nextcloudsync_vfs_xattr)
+        target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE openlistsync_vfs_xattr)
     endif()
 
     IF(BUILD_UPDATER)
@@ -42,7 +42,7 @@ macro(nextcloud_build_test test_class)
     set_target_properties(${OWNCLOUD_TEST_CLASS}Test PROPERTIES FOLDER Tests)
 endmacro()
 
-macro(nextcloud_add_test test_class)
+macro(openlist_add_test test_class)
     set(CMAKE_AUTOMOC TRUE)
     set(OWNCLOUD_TEST_CLASS ${test_class})
     string(TOLOWER "${OWNCLOUD_TEST_CLASS}" OWNCLOUD_TEST_CLASS_LOWERCASE)
@@ -53,7 +53,7 @@ macro(nextcloud_add_test test_class)
     target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE
       OpenList::sync
       testutils
-      nextcloudCore
+      openlistCore
       cmdCore
       Qt::Test
       Qt::Quick
@@ -62,13 +62,13 @@ macro(nextcloud_add_test test_class)
 
     if (WIN32)
         target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE
-            nextcloudsync_vfs_cfapi
+            openlistsync_vfs_cfapi
         )
     endif()
 
     if (LINUX)
         target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE
-            nextcloudsync_vfs_xattr
+            openlistsync_vfs_xattr
         )
     endif()
 
@@ -92,7 +92,7 @@ macro(nextcloud_add_test test_class)
     set_target_properties(${OWNCLOUD_TEST_CLASS}Test PROPERTIES FOLDER Tests)
 endmacro()
 
-macro(nextcloud_add_benchmark test_class)
+macro(openlist_add_benchmark test_class)
     set(CMAKE_AUTOMOC TRUE)
     set(OWNCLOUD_TEST_CLASS ${test_class})
     string(TOLOWER "${OWNCLOUD_TEST_CLASS}" OWNCLOUD_TEST_CLASS_LOWERCASE)
@@ -103,7 +103,7 @@ macro(nextcloud_add_benchmark test_class)
     target_link_libraries(${OWNCLOUD_TEST_CLASS}Bench
       OpenList::sync
       testutils
-      nextcloudCore
+      openlistCore
       cmdCore
       Qt::Core
       Qt::Test

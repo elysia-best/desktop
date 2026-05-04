@@ -18,7 +18,7 @@ if(APPLE)
         xcodebuild
         ARCHS=${CMAKE_OSX_ARCHITECTURES}
         ONLY_ACTIVE_ARCH=NO
-        -project ${CMAKE_SOURCE_DIR}/shell_integration/MacOSX/NextcloudIntegration/NextcloudIntegration.xcodeproj
+        -project ${CMAKE_SOURCE_DIR}/shell_integration/MacOSX/OpenListIntegration/OpenListIntegration.xcodeproj
         -target FinderSyncExt
         -configuration ${XCODE_TARGET_CONFIGURATION}
         "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
@@ -35,7 +35,7 @@ if(APPLE)
             xcodebuild
             ARCHS=${CMAKE_OSX_ARCHITECTURES}
             ONLY_ACTIVE_ARCH=NO
-            -project ${CMAKE_SOURCE_DIR}/shell_integration/MacOSX/NextcloudIntegration/NextcloudIntegration.xcodeproj
+            -project ${CMAKE_SOURCE_DIR}/shell_integration/MacOSX/OpenListIntegration/OpenListIntegration.xcodeproj
             -target FileProviderExt 
             -configuration ${XCODE_TARGET_CONFIGURATION}
             "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
@@ -52,7 +52,7 @@ if(APPLE)
             xcodebuild
             ARCHS=${CMAKE_OSX_ARCHITECTURES}
             ONLY_ACTIVE_ARCH=NO
-            -project ${CMAKE_SOURCE_DIR}/shell_integration/MacOSX/NextcloudIntegration/NextcloudIntegration.xcodeproj
+            -project ${CMAKE_SOURCE_DIR}/shell_integration/MacOSX/OpenListIntegration/OpenListIntegration.xcodeproj
             -target FileProviderUIExt
             -configuration ${XCODE_TARGET_CONFIGURATION}
             "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
