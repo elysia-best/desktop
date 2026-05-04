@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "config.h"
 #include "notificationhandler.h"
 #include "usermodel.h"
 #include "common/filesystembase.h"

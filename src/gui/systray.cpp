@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "config.h"
 #include "accountmanager.h"
 #include "systray.h"
 #include "theme.h"
-#include "config.h"
 #include "common/utility.h"
 #include "tray/svgimageprovider.h"
 #include "tray/usermodel.h"

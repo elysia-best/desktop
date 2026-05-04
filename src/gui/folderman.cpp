@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "config.h"
 #include "folderman.h"
 #include "configfile.h"
 #include "folder.h"
