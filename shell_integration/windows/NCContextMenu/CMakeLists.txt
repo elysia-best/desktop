@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2020 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2020 OpenList contributors
 # SPDX-License-Identifier: LGPL-2.1-or-later
 add_library(NCContextMenu MODULE
     dllmain.cpp

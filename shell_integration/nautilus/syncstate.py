@@ -1,10 +1,9 @@
-# SPDX-FileCopyrightText: 2018 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2018 OpenList contributors
 # SPDX-FileCopyrightText: 2014 ownCloud GmbH
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# This program is the core of the nextcloud integration to Nautilus
-# It will be installed on /usr/share/nautilus-python/extensions/ with the paquet Nextcloud-client-nautilus
-# (https://github.com/nextcloud/desktop/edit/master/shell_integration/nautilus/syncstate.py)
+# This program is the core of the OpenList integration to Nautilus
+# It will be installed on /usr/share/nautilus-python/extensions/ with the paquet OpenList-client-nautilus
 
 import sys
 python3 = sys.version_info[0] >= 3
@@ -19,7 +18,7 @@ import time
 
 from gi.repository import GObject, Nautilus
 
-# Note: setappname.sh will search and replace 'Nextcloud' on this file to update this line and other
+# Note: setappname.sh will search and replace 'OpenList' on this file to update this line and other
 # occurrences of the name
 appname = 'OpenList'
 

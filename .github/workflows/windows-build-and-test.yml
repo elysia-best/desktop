@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2022 OpenList Team
 # SPDX-License-Identifier: GPL-2.0-or-later
 name: Windows Build and Test
 on:
@@ -21,20 +21,20 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.12'
-      - name: Install Craft Master with Nextcloud Client Deps
+      - name: Install Craft Master with OpenList Client Deps
         shell: pwsh
         run: |
           & cmd /C "git clone -q --depth=1 https://invent.kde.org/packaging/craftmaster.git ${{ env.CRAFT_MASTER_LOCATION }} 2>&1"
-          
+
           function craft() {
               python "${{ env.CRAFT_MASTER_LOCATION }}\CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c $args
               if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
           }
-          
-          craft --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"
-          craft --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"
+
+          craft --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo (https://github.com/openlist/craft-blueprints-kde.git)
+          craft --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo (https://github.com/openlist/desktop-client-blueprints.git)
           craft craft
-          craft --install-deps nextcloud-client
+          craft --install-deps openlist-client  # TODO: Verify Craft package name openlist-client exists
           
       - name: Cache Install OpenCppCoverage
         id: cache-install-opencppcoverage
@@ -76,13 +76,13 @@ jobs:
               if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
           }
           
-          craft --src-dir ${{ github.workspace }} nextcloud-client
+          craft --src-dir ${{ github.workspace }} openlist-client  # TODO: Verify Craft package name openlist-client exists
           
       - name: Run tests with coverage
         shell: pwsh
         run: |
           function runTests() {
-              $buildFolder = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\nextcloud-client\work\build"
+              $buildFolder = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\openlist-client\work\build"  # TODO: Verify Craft build path for openlist-client
 
               cd $buildFolder
 

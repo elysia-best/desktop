@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA0A62F22E8EA929007F4A7A"
-               BuildableName = "NextcloudDev"
-               BlueprintName = "NextcloudDev"
+               BuildableName = "OpenListDev"
+               BlueprintName = "OpenListDev"
                ReferencedContainer = "container:NextcloudIntegration.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -42,8 +42,8 @@
       allowLocationSimulation = "YES">
       <PathRunnable
          runnableDebuggingMode = "0"
-         BundleIdentifier = "com.nextcloud.desktopclient"
-         FilePath = "/Applications/NextcloudDev.app">
+         BundleIdentifier = "org.openlist.desktopclient"
+         FilePath = "/Applications/OpenListDev.app">
       </PathRunnable>
    </LaunchAction>
    <ProfileAction
@@ -56,8 +56,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA0A62F22E8EA929007F4A7A"
-            BuildableName = "NextcloudDev"
-            BlueprintName = "NextcloudDev"
+            BuildableName = "OpenListDev"
+            BlueprintName = "OpenListDev"
             ReferencedContainer = "container:NextcloudIntegration.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -1,6 +1,6 @@
-# Nextcloud macOS Integration Project
+# OpenList macOS Integration Project
 
-This is an Xcode project to build platform-specific components for the Nextcloud desktop client.
+This is an Xcode project to build platform-specific components for the OpenList desktop client.
 As an example, this includes the file provider extension.
 
 ## Localization
@@ -16,7 +16,7 @@ The dedicated [`.tx/config`](.tx/config) file is used.
 
 ## Pulling Translations
 
-Run this in the "NextcloudIntegration" project folder of your repository clone:
+Run this in the "OpenListIntegration" project folder of your repository clone:
 
 ```sh
 tx pull --force --all --mode=translator
@@ -51,13 +51,13 @@ This means that changes on Transifex must be integrated locally first to avoid d
 2. Build the extensions in Xcode. This causes the compiler to update the string catalogs based on the current source code by automatically recognizing localizable texts. As of writing, the "desktopclient" scheme is a good choice because it builds both file provider extensions as dependencies.
 3. Run the `TransifexStringCatalogSanitizer` over both string catalogs as in the previous section.
 4. Inspect the changes in the string catalogs in a Git diff or whatever tool you use for that task. Verify the plausibility of each change.
-5. Run `tx push` in the "NextcloudIntegration" directory.
+5. Run `tx push` in the "OpenListIntegration" directory.
 6. Check Transifex to have received the new keys and deleted the obsolete ones.
 
-## Nextcloud Developer Build
+## OpenList Developer Build
 
 There is a special target in the Xcode project which integrates the `mac-crafter` command-line tool as an external build system in form of a scheme.
-In other words: The "NextcloudDev" scheme enables you to build, run and debug the Nextcloud desktop client with the simple run action in Xcode. 
+In other words: The "OpenListDev" scheme enables you to build, run and debug the OpenList desktop client with the simple run action in Xcode. 
 
 ### Requirements
 
@@ -65,12 +65,12 @@ In other words: The "NextcloudDev" scheme enables you to build, run and debug th
 
 ### Usage
 
-1. Copy [`Build.xcconfig.template`](NextcloudDev/Build.xcconfig.template) in the "NextcloudDev" source code folder to `Build.xcconfig` in the same location and adjust the values in it to your local setup.
-2. Build or run the "NextcloudDev scheme".
+1. Copy [`Build.xcconfig.template`](NextcloudDev/Build.xcconfig.template) in the "OpenListDev" source code folder to `Build.xcconfig` in the same location and adjust the values in it to your local setup.
+2. Build or run the "OpenListDev scheme".
 
 ### Known Issues
 
-- Right now, the project does not support signing a different app identity than the default one (`com.nextcloud.desktopclient`) which is owned by the Nextcloud GmbH development team registered with Apple.
+- Right now, the project does not support signing a different app identity than the default one (`org.openlist.desktopclient`) which is owned by the OpenList Team development team registered with Apple.
   This means that you have to be signed in with a developer account in Xcode which is part of that development team when building.
 - Even when building successfully, Xcode may conclude that the build failed or at least some errors occurred during the build.
   During the build, some command outputs messages with an "Error: " prefix.
@@ -81,11 +81,11 @@ In other words: The "NextcloudDev" scheme enables you to build, run and debug th
 
 ### How It Works
 
-- The "NextcloudDev" target runs the [Craft.sh](NextcloudDev/Craft.sh) shell script which is part of this Xcode project.
-- `Craft.sh` prepares the execution of and finally runs [`mac-crafter`](https://github.com/nextcloud/desktop/tree/master/admin/osx/mac-crafter) which is part of the Nextcloud desktop client repository to simplify builds on macOS.
+- The "OpenListDev" target runs the [Craft.sh](NextcloudDev/Craft.sh) shell script which is part of this Xcode project.
+- `Craft.sh` prepares the execution of and finally runs [`mac-crafter`](https://github.com/nextcloud/desktop/tree/master/admin/osx/mac-crafter) which is part of the OpenList desktop client repository to simplify builds on macOS.
 - By running `mac-crafter` with the right arguments and options, Xcode can attach to the built app with its debugger and stop at breakpoints.
   One of the key factors is the `Debug` build type which flips certain switches in the CMake build scripts ([in example: app hardening or get-task-allow entitlement](https://github.com/nextcloud/desktop/pull/8474/files)).
-- The built Nextcloud desktop client app bundle is not placed into a derived data directory of Xcode but `/Applications`.
+- The built OpenList desktop client app bundle is not placed into a derived data directory of Xcode but `/Applications`.
   The standard behavior of placing the product into Xcode's derived data directory would result in absolute reference paths within the scheme file which are not portable across devices and users due to varying user names.
 
 ### Hints
@@ -119,6 +119,6 @@ You can debug the file provider extension process(es) in Xcode by attaching to t
 
 You can directly debug changes to these dependencies edited from this project.
 You have to have local repository clones of the packages somewhere locally, though.
-Drag and drop the package folders into the project navigator of the NextcloudIntegration project.
+Drag and drop the package folders into the project navigator of the OpenListIntegration project.
 This will cause Xcode to resolve to the local and editable package instead of a cached read-only clone from GitHub.
 When you then run the build action of this root project, the local dependency is built as well.

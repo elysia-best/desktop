@@ -19,7 +19,6 @@
 #include "folder.h"
 #include "folderman.h"
 #include "logger.h"
-#include "pushnotifications.h"
 #include "socketapi/socketapi.h"
 #include "theme.h"
 

@@ -1,4 +1,4 @@
-//  SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+//  SPDX-FileCopyrightText: 2023 OpenList contributors
 //  SPDX-License-Identifier: GPL-2.0-or-later
 
 @preconcurrency import FileProvider

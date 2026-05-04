@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2023 OpenList Team
 # SPDX-License-Identifier: GPL-2.0-or-later
 name: Check translations
 
@@ -21,7 +21,7 @@ jobs:
 
   checkTranslations:
     runs-on: ubuntu-latest
-    container: ghcr.io/nextcloud/continuous-integration-translations-desktop:latest
+    container: ghcr.io/nextcloud/continuous-integration-translations-desktop:latest  # TODO: Update to OpenList CI translations container (ghcr.io/openlist/ci-translations-desktop)
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

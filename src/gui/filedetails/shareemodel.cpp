@@ -9,7 +9,6 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 
-#include "ocsshareejob.h"
 #include "theme.h"
 
 namespace OCC {
@@ -196,18 +195,9 @@ void ShareeModel::fetch()
 
     Q_EMIT fetchOngoingChanged();
 
-    const auto shareItemTypeString = _shareItemIsFolder ? QStringLiteral("folder") : QStringLiteral("file");
-
-    auto *job = new OcsShareeJob(_accountState->account());
-
-    connect(job, &OcsShareeJob::shareeJobFinished, this, &ShareeModel::shareesFetched);
-    connect(job, &OcsJob::ocsError, this, [&](const int statusCode, const QString &message) {
-        _fetchOngoing = false;
-        Q_EMIT fetchOngoingChanged();
-        Q_EMIT ShareeModel::displayErrorMessage(statusCode, message);
-    });
-
-    job->getSharees(_searchString, shareItemTypeString, 1, 50, _lookupMode == LookupMode::GlobalSearch ? true : false);
+    // TODO: Replace OcsShareeJob with new sharee lookup mechanism
+    _fetchOngoing = false;
+    Q_EMIT fetchOngoingChanged();
 }
 
 void ShareeModel::shareesFetched(const QJsonDocument &reply)

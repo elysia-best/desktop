@@ -7,15 +7,11 @@
 #include "accountstate.h"
 
 #include "accountmanager.h"
-#include "remotewipe.h"
 #include "account.h"
 #include "creds/abstractcredentials.h"
 #include "creds/httpcredentials.h"
 #include "logger.h"
 #include "configfile.h"
-#include "ocsnavigationappsjob.h"
-#include "ocsuserstatusconnector.h"
-#include "pushnotifications.h"
 #include "networkjobs.h"
 
 #include <QSettings>
@@ -44,19 +40,16 @@ AccountState::AccountState(const AccountPtr &account)
     , _waitingForNewCredentials(false)
     , _termsOfServiceChecker(_account)
     , _maintenanceToConnectedDelay(60000 + (QRandomGenerator::global()->generate() % (4 * 60000))) // 1-5min delay
-    , _remoteWipe(new RemoteWipe(_account))
     , _isDesktopNotificationsAllowed(true)
 {
     qRegisterMetaType<AccountState *>("AccountState*");
 
     connect(account.data(), &Account::invalidCredentials,
-        this, &AccountState::slotHandleRemoteWipeCheck);
+        this, &AccountState::handleInvalidCredentials);
     connect(account.data(), &Account::credentialsFetched,
         this, &AccountState::slotCredentialsFetched);
     connect(account.data(), &Account::credentialsAsked,
         this, &AccountState::slotCredentialsAsked);
-    connect(account.data(), &Account::pushNotificationsReady,
-            this, &AccountState::slotPushNotificationsReady);
     connect(account.data(), &Account::serverUserStatusChanged, this,
         &AccountState::slotServerUserStatusChanged);
     connect(&_termsOfServiceChecker, &TermsOfServiceChecker::done,
@@ -458,19 +451,6 @@ void AccountState::slotConnectionValidatorResult(ConnectionValidator::Status sta
     }
 }
 
-void AccountState::slotHandleRemoteWipeCheck()
-{
-    // make sure it changes account state and icons
-    signOutByUi();
-
-    qCInfo(lcAccountState) << "Invalid credentials for" << _account->url().toString()
-                           << "checking for remote wipe request";
-
-    _waitingForNewCredentials = false;
-    setState(SignedOut);
-}
-
-
 void AccountState::handleInvalidCredentials()
 {
     if (isSignedOut() || _waitingForNewCredentials)
@@ -535,12 +515,7 @@ std::unique_ptr<QSettings> AccountState::settings()
 }
 
 void AccountState::fetchNavigationApps(){
-    auto *job = new OcsNavigationAppsJob(_account);
-    job->addRawHeader("If-None-Match", navigationAppsEtagResponseHeader());
-    connect(job, &OcsNavigationAppsJob::appsJobFinished, this, &AccountState::slotNavigationAppsFetched);
-    connect(job, &OcsNavigationAppsJob::etagResponseHeaderReceived, this, &AccountState::slotEtagResponseHeaderReceived);
-    connect(job, &OcsNavigationAppsJob::ocsError, this, &AccountState::slotOcsError);
-    job->getNavigationApps();
+    // TODO: Replace OcsNavigationAppsJob with new navigation apps mechanism
 }
 
 void AccountState::resetRetryCount()
@@ -579,10 +554,8 @@ void AccountState::slotCheckConnection()
 
     // Don't check if we're manually signed out or
     // when the error is permanent.
-    const auto pushNotifications = account()->pushNotifications();
-    const auto pushNotificationsAvailable = (pushNotifications && pushNotifications->isReady());
     if (currentState != AccountState::SignedOut && currentState != AccountState::ConfigurationError
-        && currentState != AccountState::AskingCredentials && !pushNotificationsAvailable) {
+        && currentState != AccountState::AskingCredentials) {
         checkConnectivity();
     } else if (currentState == AccountState::SignedOut && lastConnectionStatus() == AccountState::ConnectionStatus::SslError) {
         qCWarning(lcAccountState()) << "Account is signed out due to SSL Handshake error. Going to perform a sign-in attempt...";
@@ -621,7 +594,7 @@ void AccountState::slotPushNotificationsReady()
 
 void AccountState::slotServerUserStatusChanged()
 {
-    setDesktopNotificationsAllowed(_account->userStatusConnector()->userStatus().state() != UserStatus::OnlineStatus::DoNotDisturb);
+    // TODO: Replace OcsUserStatusConnector with new user status mechanism
 }
 
 void AccountState::slotNavigationAppsFetched(const QJsonDocument &reply, int statusCode)

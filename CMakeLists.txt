@@ -209,7 +209,7 @@ option(BUILD_CLIENT "BUILD_CLIENT" ON)
 # this option creates only libocsync and libowncloudsync (NOTE: BUILD_CLIENT needs to be on)
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
-# build the GUI component, when disabled only nextcloudcmd is built
+# build the GUI component, when disabled only openlistcmd is built
 option(BUILD_GUI "BUILD_GUI" ON)
 
 # build the tests

@@ -796,7 +796,6 @@ void FolderMan::forceSyncForFolder(Folder *folder)
 
 void FolderMan::removeE2eFiles(const AccountPtr &account) const
 {
-    Q_ASSERT(!account->e2e()->isInitialized());
     for (const auto folder : map()) {
         if(folder->accountState()->account()->id() == account->id()) {
             folder->removeLocalE2eFiles();

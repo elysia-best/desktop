@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-FileCopyrightText: 2023 OpenList contributors
  * SPDX-FileCopyrightText: 2015 ownCloud GmbH
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */

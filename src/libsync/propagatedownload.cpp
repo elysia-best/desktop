@@ -17,8 +17,6 @@
 #include "propagatorjobs.h"
 #include <common/asserts.h>
 #include <common/constants.h>
-#include "clientsideencryptionjobs.h"
-#include "propagatedownloadencrypted.h"
 #include "common/vfs.h"
 
 #include <QLoggingCategory>
@@ -371,111 +369,13 @@ QString GETFileJob::errorString() const
     return AbstractNetworkJob::errorString();
 }
 
-GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QString &path, QIODevice *device,
-    const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
-    qint64 resumeStart, FolderMetadata::EncryptedFile encryptedInfo, QObject *parent)
-    : GETFileJob(account, path, device, headers, expectedEtagForResume, resumeStart, parent)
-    , _encryptedFileInfo(encryptedInfo)
-{
-}
-
-GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QUrl &url, QIODevice *device,
-    const QMap<QByteArray, QByteArray> &headers, const QByteArray &expectedEtagForResume,
-    qint64 resumeStart, FolderMetadata::EncryptedFile encryptedInfo, QObject *parent)
-    : GETFileJob(account, url, device, headers, expectedEtagForResume, resumeStart, parent)
-    , _encryptedFileInfo(encryptedInfo)
-{
-}
-
-qint64 GETEncryptedFileJob::writeToDevice(const QByteArray &data)
-{
-    if (!_decryptor) {
-        // only initialize the decryptor once, because, according to Qt documentation, metadata might get changed during the processing of the data sometimes
-        // https://doc.qt.io/qt-5/qnetworkreply.html#metaDataChanged
-        _decryptor.reset(new EncryptionHelper::StreamingDecryptor(_encryptedFileInfo.encryptionKey, _encryptedFileInfo.initializationVector, _contentLength));
-    }
-
-    if (!_decryptor->isInitialized()) {
-        return -1;
-    }
-
-    const auto bytesRemaining = _contentLength - _processedSoFar - data.length();
-
-    if (bytesRemaining != 0 && bytesRemaining < OCC::Constants::e2EeTagSize) {
-        // decryption is going to fail if last chunk does not include or does not equal to OCC::Constants::e2EeTagSize bytes tag
-        // we may end up receiving packets beyond OCC::Constants::e2EeTagSize bytes tag at the end
-        // in that case, we don't want to try and decrypt less than OCC::Constants::e2EeTagSize ending bytes of tag, we will accumulate all the incoming data till the end
-        // and then, we are going to decrypt the entire chunk containing OCC::Constants::e2EeTagSize bytes at the end
-        _pendingBytes += QByteArray(data.constData(), data.length());
-        _processedSoFar += data.length();
-        if (_processedSoFar != _contentLength) {
-            return data.length();
-        }
-    }
-
-    if (!_pendingBytes.isEmpty()) {
-        const auto decryptedChunk = _decryptor->chunkDecryption(_pendingBytes.constData(), _pendingBytes.size());
-
-        if (decryptedChunk.isEmpty()) {
-            qCCritical(lcPropagateDownload) << "Decryption failed!";
-            return -1;
-        }
-
-        GETFileJob::writeToDevice(decryptedChunk);
-
-        return data.length();
-    }
-
-    const auto decryptedChunk = _decryptor->chunkDecryption(data.constData(), data.length());
-
-    if (decryptedChunk.isEmpty()) {
-        qCCritical(lcPropagateDownload) << "Decryption failed!";
-        return -1;
-    }
-
-    GETFileJob::writeToDevice(decryptedChunk);
-
-    _processedSoFar += data.length();
-
-    return data.length();
-}
-
 void PropagateDownloadFile::start()
 {
     if (propagator()->_abortRequested)
         return;
-    _isEncrypted = false;
-
     qCDebug(lcPropagateDownload) << _item->_file << propagator()->_activeJobList.count();
 
-    const auto path = _item->_file;
-    const auto slashPosition = path.lastIndexOf('/');
-    const auto parentPath = slashPosition >= 0 ? path.left(slashPosition) : QString();
-
-    SyncJournalFileRecord parentRec;
-    if (!propagator()->_journal->getFileRecord(parentPath, &parentRec)) {
-        qCWarning(lcPropagateDownload) << "Could not get file from local DB" << parentPath;
-        done(SyncFileItem::NormalError, tr("Could not get file %1 from local DB").arg(parentPath), ErrorCategory::GenericError);
-        return;
-    }
-
-    const auto account = propagator()->account();
-    if (!account->capabilities().clientSideEncryptionAvailable() ||
-        !parentRec.isValid() ||
-        !parentRec.isE2eEncrypted()) {
-        startAfterIsEncryptedIsChecked();
-    } else {
-        _downloadEncryptedHelper = new PropagateDownloadEncrypted(propagator(), parentPath, _item, this);
-        connect(_downloadEncryptedHelper, &PropagateDownloadEncrypted::fileMetadataFound, [this] {
-          _isEncrypted = true;
-          startAfterIsEncryptedIsChecked();
-        });
-        connect(_downloadEncryptedHelper, &PropagateDownloadEncrypted::failed, [this] {
-          done(SyncFileItem::NormalError,
-               tr("File %1 cannot be downloaded because encryption information is missing.").arg(QDir::toNativeSeparators(_item->_file)), ErrorCategory::GenericError);
-        });
-        _downloadEncryptedHelper->start();
-    }
+    startAfterIsEncryptedIsChecked();
 }
 
 void PropagateDownloadFile::startAfterIsEncryptedIsChecked()
@@ -724,7 +624,7 @@ void PropagateDownloadFile::startDownload()
     if (_item->_directDownloadUrl.isEmpty()) {
         // Normal job, download from oC instance
         _job = new GETFileJob(propagator()->account(),
-            propagator()->fullRemotePath(isEncrypted() ? _item->_encryptedFileName : _item->_file),
+            propagator()->fullRemotePath(_item->_file),
             &_tmpFile, headers, expectedEtagForResume, _resumeStart, this);
     } else {
         // We were provided a direct URL, use that one
@@ -988,7 +888,7 @@ void PropagateDownloadFile::slotChecksumFail(const QString &errMsg,
 {
     if (reason == ValidateChecksumHeader::FailureReason::ChecksumMismatch && propagator()->account()->isChecksumRecalculateRequestSupported()) {
             const QByteArray calculatedChecksumHeader(calculatedChecksumType + ':' + calculatedChecksum);
-            const QString fullRemotePathForFile(propagator()->fullRemotePath(isEncrypted() ? _item->_encryptedFileName : _item->_file));
+            const QString fullRemotePathForFile(propagator()->fullRemotePath(_item->_file));
             auto *job = new SimpleFileJob(propagator()->account(), fullRemotePathForFile);
             QObject::connect(job, &SimpleFileJob::finishedSignal, this,
                 [this, calculatedChecksumHeader, errMsg](const QNetworkReply *reply) { processChecksumRecalculate(reply, calculatedChecksumHeader, errMsg);
@@ -1186,15 +1086,7 @@ void PropagateDownloadFile::localFileContentChecksumComputed(const QByteArray &c
 
 void PropagateDownloadFile::finalizeDownload()
 {
-    if (isEncrypted()) {
-        if (_downloadEncryptedHelper->decryptFile(_tmpFile)) {
-            downloadFinished();
-        } else {
-            done(SyncFileItem::NormalError, _downloadEncryptedHelper->errorString(), ErrorCategory::GenericError);
-        }
-    } else {
-        downloadFinished();
-    }
+    downloadFinished();
 }
 
 void PropagateDownloadFile::downloadFinished()
@@ -1409,11 +1301,7 @@ void PropagateDownloadFile::updateMetadata(bool isConflict)
         return;
     }
 
-    if (isEncrypted()) {
-        propagator()->_journal->setDownloadInfo(_item->_file, SyncJournalDb::DownloadInfo());
-    } else {
-        propagator()->_journal->setDownloadInfo(_item->_encryptedFileName, SyncJournalDb::DownloadInfo());
-    }
+    propagator()->_journal->setDownloadInfo(_item->_file, SyncJournalDb::DownloadInfo());
 
     propagator()->_journal->commit("download file start2");
 

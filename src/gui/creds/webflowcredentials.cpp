@@ -584,22 +584,15 @@ void WebFlowCredentials::deleteKeychainEntries(bool oldKeychainEntries) {
       *
       *       We introduce this dirty hack here, to allow deleting them upon Remote Wipe.
      */
-    if(_account->isRemoteWipeRequested_HACK()) {
-    // <-- FIXME MS@2019-12-07
+    // Also delete key / cert sub-chunks (KeychainChunk takes care of the Windows workaround)
+    // The first chunk (0) has no suffix, to stay compatible with older versions and non-Windows
+    startDeleteJob(_user + clientKeyPEMC);
+    startDeleteJob(_user + clientCertificatePEMC);
 
-        // Also delete key / cert sub-chunks (KeychainChunk takes care of the Windows workaround)
-        // The first chunk (0) has no suffix, to stay compatible with older versions and non-Windows
-        startDeleteJob(_user + clientKeyPEMC);
-        startDeleteJob(_user + clientCertificatePEMC);
-
-        // CA cert slots
-        for (auto i = 0; i < _clientSslCaCertificates.count(); i++) {
-            startDeleteJob(_user + clientCaCertificatePEMC + QString::number(i));
-        }
-
-    // FIXME MS@2019-12-07 -->
+    // CA cert slots
+    for (auto i = 0; i < _clientSslCaCertificates.count(); i++) {
+        startDeleteJob(_user + clientCaCertificatePEMC + QString::number(i));
     }
-    // <-- FIXME MS@2019-12-07
 }
 
 } // namespace OCC

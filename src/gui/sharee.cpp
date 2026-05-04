@@ -5,7 +5,6 @@
  */
 
 #include "sharee.h"
-#include "ocsshareejob.h"
 #include "theme.h"
 
 #include <QJsonObject>

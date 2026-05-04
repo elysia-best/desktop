@@ -28,27 +28,27 @@ if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 endif()
 
 if(NOT BUILD_LIBRARIES_ONLY)
-  add_executable(nextcloudcmd
+  add_executable(openlistcmd
       cmd.h
       cmd.cpp)
-  ecm_mark_nongui_executable(nextcloudcmd)
-  set_target_properties(nextcloudcmd PROPERTIES RUNTIME_OUTPUT_NAME "${APPLICATION_EXECUTABLE}cmd")
+  ecm_mark_nongui_executable(openlistcmd)
+  set_target_properties(openlistcmd PROPERTIES RUNTIME_OUTPUT_NAME "${APPLICATION_EXECUTABLE}cmd")
 
-  target_link_libraries(nextcloudcmd cmdCore)
+  target_link_libraries(openlistcmd cmdCore)
 
   if(BUILD_OWNCLOUD_OSX_BUNDLE)
-    set_target_properties(nextcloudcmd PROPERTIES
+    set_target_properties(openlistcmd PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${BIN_OUTPUT_DIRECTORY}/${OWNCLOUD_OSX_BUNDLE}/Contents/MacOS")
   else()
-    set_target_properties(nextcloudcmd PROPERTIES
+    set_target_properties(openlistcmd PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
-    install(TARGETS nextcloudcmd
+    install(TARGETS openlistcmd
 	  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
     if (WIN32)
-      install(FILES $<TARGET_PDB_FILE:nextcloudcmd> DESTINATION bin OPTIONAL)
+      install(FILES $<TARGET_PDB_FILE:openlistcmd> DESTINATION bin OPTIONAL)
     endif()
   endif()
 endif()

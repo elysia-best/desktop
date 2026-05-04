@@ -14,8 +14,6 @@
 #include "propagateremotemkdir.h"
 #include "bulkpropagatorjob.h"
 #include "bulkpropagatordownloadjob.h"
-#include "updatee2eefoldermetadatajob.h"
-#include "updatemigratede2eemetadatajob.h"
 #include "propagatorjobs.h"
 #include "filesystem.h"
 #include "common/utility.h"
@@ -23,7 +21,6 @@
 #include "common/asserts.h"
 #include "discoveryphase.h"
 #include "syncfileitem.h"
-#include "foldermetadata.h"
 
 #ifdef Q_OS_WIN
 #include <windef.h>
@@ -387,12 +384,6 @@ PropagateItemJob *OwncloudPropagator::createJob(const SyncFileItemPtr &item)
         }
     case CSYNC_INSTRUCTION_UPDATE_VFS_METADATA:
         return new PropagateVfsUpdateMetadataJob(this, item);
-    case CSYNC_INSTRUCTION_UPDATE_ENCRYPTION_METADATA:
-    {
-        const auto rootE2eeFolderPath = item->_file.split('/').first();
-        const auto rootE2eeFolderPathFullRemotePath = fullRemotePath(rootE2eeFolderPath);
-        return new UpdateMigratedE2eeMetadataJob(this, item, rootE2eeFolderPathFullRemotePath, remotePath());
-    }
     case CSYNC_INSTRUCTION_IGNORE:
     case CSYNC_INSTRUCTION_ERROR:
         return new PropagateIgnoreJob(this, item);
@@ -667,14 +658,6 @@ void OwncloudPropagator::startDirectoryPropagation(const SyncFileItemPtr &item,
         currentDirJob->appendJob(directoryPropagationJob.get());
     }
     directories.push(qMakePair(item->destination() + "/", directoryPropagationJob.release()));
-    if (item->_isFileDropDetected) {
-        const auto currentDirJob = directories.top().second;
-        currentDirJob->appendJob(new UpdateE2eeFolderMetadataJob(this, item, item->_file));
-        item->_instruction = CSYNC_INSTRUCTION_UPDATE_METADATA;
-        _anotherSyncNeeded = true;
-    } else if (item->_isEncryptedMetadataNeedUpdate) {
-        processE2eeMetadataMigration(item, directories);
-    }
 }
 
 void OwncloudPropagator::startFilePropagation(const SyncFileItemPtr &item,
@@ -731,61 +714,6 @@ void OwncloudPropagator::addBulkPropagateDownloadItem(const SyncFileItemPtr &ite
         bulkPropagatorDownloadJob = qobject_cast<BulkPropagatorDownloadJob *>(*foundBulkPrpagatorDownloadJobIt);
     }
     bulkPropagatorDownloadJob->addDownloadItem(item);
-}
-
-void OwncloudPropagator::processE2eeMetadataMigration(const SyncFileItemPtr &item, QStack<QPair<QString, PropagateDirectory *>> &directories)
-{
-    if (item->_e2eEncryptionServerCapability >= EncryptionStatusEnums::ItemEncryptionStatus::EncryptedMigratedV2_0) {
-        // migrating to v2.0+
-        const auto rootE2eeFolderPath = item->_file.split('/').first();
-        const auto rootE2eeFolderPathWithSlash = QString(rootE2eeFolderPath + "/");
-
-        QPair<QString, PropagateDirectory *> foundDirectory = {QString{}, nullptr};
-        for (auto it = std::rbegin(directories); it != std::rend(directories); ++it) {
-            if (it->first == rootE2eeFolderPathWithSlash) {
-                foundDirectory = *it;
-                break;
-            }
-        }
-
-        UpdateMigratedE2eeMetadataJob *existingUpdateJob = nullptr;
-
-        SyncFileItemPtr topLevelitem = item;
-        if (foundDirectory.second) {
-            topLevelitem = foundDirectory.second->_item;
-            if (!foundDirectory.second->_subJobs._jobsToDo.isEmpty()) {
-                for (const auto jobToDo : std::as_const(foundDirectory.second->_subJobs._jobsToDo)) {
-                    if (const auto foundExistingUpdateMigratedE2eeMetadataJob = qobject_cast<UpdateMigratedE2eeMetadataJob *>(jobToDo)) {
-                        existingUpdateJob = foundExistingUpdateMigratedE2eeMetadataJob;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!existingUpdateJob) {
-            // we will need to update topLevelitem encryption status so it gets written to database
-            const auto currentDirJob = directories.top().second;
-            const auto rootE2eeFolderPathFullRemotePath = fullRemotePath(rootE2eeFolderPath);
-            const auto updateMetadataJob = new UpdateMigratedE2eeMetadataJob(this, topLevelitem, rootE2eeFolderPathFullRemotePath, remotePath());
-            if (item != topLevelitem) {
-                updateMetadataJob->addSubJobItem(item->_encryptedFileName, item);
-            }
-            currentDirJob->appendJob(updateMetadataJob);
-        } else {
-            if (item != topLevelitem) {
-                // simply append subJob item so we can set its encryption status when corresponging subjob finishes
-                existingUpdateJob->addSubJobItem(item->_encryptedFileName, item);
-            }
-        }
-    } else {
-        // migrating to v1.2
-        const auto remoteFilename = item->_encryptedFileName.isEmpty() ? item->_file : item->_encryptedFileName;
-        const auto currentDirJob = directories.top().second;
-        currentDirJob->appendJob(new UpdateE2eeFolderMetadataJob(this, item, remoteFilename));
-    }
-
-    item->_instruction = CSYNC_INSTRUCTION_UPDATE_METADATA;
 }
 
 const SyncOptions &OwncloudPropagator::syncOptions() const

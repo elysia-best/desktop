@@ -9,11 +9,8 @@
 
 #include "accountmanager.h"
 #include "owncloudgui.h"
-#include <pushnotifications.h>
-#include "userstatusselectormodel.h"
 #include "syncengine.h"
 #include "syncresult.h"
-#include "ocsjob.h"
 #include "configfile.h"
 #include "notificationconfirmjob.h"
 #include "logger.h"
@@ -26,7 +23,6 @@
 #include "tray/talkreply.h"
 #include "userstatusconnector.h"
 #include "common/utility.h"
-#include "ocsassistantconnector.h"
 
 #ifdef BUILD_FILE_PROVIDER_MODULE
 #include "gui/macOS/fileprovider.h"
@@ -300,23 +296,6 @@ User::User(AccountStatePtr &account, const bool &isCurrent, QObject *parent)
 
     connect(this, &User::sendReplyMessage, this, &User::slotSendReplyMessage);
 
-    connect(_account->account().data(), &Account::userCertificateNeedsMigrationChanged, this, [this] () {
-        auto certificateNeedMigration = Activity{};
-        certificateNeedMigration._type = Activity::OpenSettingsNotificationType;
-        certificateNeedMigration._subject = tr("End-to-end certificate needs to be migrated to a new one");
-        certificateNeedMigration._dateTime = QDateTime::fromString(QDateTime::currentDateTime().toString(), Qt::ISODate);
-        certificateNeedMigration._message = tr("Trigger the migration");
-        certificateNeedMigration._accName = _account->account()->displayName();
-        certificateNeedMigration._id = qHash("migrate-certificate");
-
-        _activityModel->removeActivityFromActivityList(certificateNeedMigration);
-
-        if (_account->account()->e2e()->userCertificateNeedsMigration()) {
-            _activityModel->addNotificationToActivityList(certificateNeedMigration);
-            showDesktopNotification(certificateNeedMigration);
-        }
-    });
-
     _assistantPollTimer.setInterval(assistantPollIntervalMsecs);
     _assistantPollTimer.setSingleShot(false);
     connect(&_assistantPollTimer, &QTimer::timeout, this, &User::slotAssistantPoll);
@@ -526,14 +505,7 @@ void User::slotPushNotificationsReady()
 
 void User::slotDisconnectPushNotifications()
 {
-    disconnect(_account->account()->pushNotifications(), &PushNotifications::notificationsChanged, this, &User::slotReceivedPushNotification);
-    disconnect(_account->account()->pushNotifications(), &PushNotifications::activitiesChanged, this, &User::slotReceivedPushActivity);
-    disconnect(_account->account()->pushNotifications(), &PushNotifications::filesChanged, this, &User::slotReceivedPushFilesChanges);
-    disconnect(_account->account()->pushNotifications(), &PushNotifications::fileIdsChanged, this, &User::slotReceivedPushFileIdsChanges);
-
-    disconnect(_account->account().data(), &Account::pushNotificationsDisabled, this, &User::slotDisconnectPushNotifications);
-
-    // connection to WebSocket may have dropped or an error occurred, so we need to bring back the polling until we have re-established the connection
+    // Push notifications removed - rely on polling
     setNotificationRefreshInterval(ConfigFile().notificationRefreshInterval());
 }
 
@@ -640,30 +612,13 @@ void User::prePendGroupFoldersWithLocalFolder()
 
 void User::connectPushNotifications() const
 {
-    connect(_account->account().data(), &Account::pushNotificationsDisabled, this, &User::slotDisconnectPushNotifications, Qt::UniqueConnection);
-
-    connect(_account->account()->pushNotifications(), &PushNotifications::notificationsChanged, this, &User::slotReceivedPushNotification, Qt::UniqueConnection);
-    connect(_account->account()->pushNotifications(), &PushNotifications::activitiesChanged, this, &User::slotReceivedPushActivity, Qt::UniqueConnection);
-    connect(_account->account()->pushNotifications(), &PushNotifications::filesChanged, this, &User::slotReceivedPushFilesChanges, Qt::UniqueConnection);
-    connect(_account->account()->pushNotifications(), &PushNotifications::fileIdsChanged, this, &User::slotReceivedPushFileIdsChanges, Qt::UniqueConnection);
+    // Push notifications removed - rely on polling
 }
 
 bool User::checkPushNotificationsAreReady() const
 {
-    const auto pushNotifications = _account->account()->pushNotifications();
-
-    const auto pushActivitiesAvailable = _account->account()->capabilities().availablePushNotifications() & PushNotificationType::Activities;
-    const auto pushNotificationsAvailable = _account->account()->capabilities().availablePushNotifications() & PushNotificationType::Notifications;
-
-    const auto pushActivitiesAndNotificationsAvailable = pushActivitiesAvailable && pushNotificationsAvailable;
-
-    if (pushActivitiesAndNotificationsAvailable && pushNotifications && pushNotifications->isReady()) {
-        connectPushNotifications();
-        return true;
-    } else {
-        connect(_account->account().data(), &Account::pushNotificationsReady, this, &User::slotPushNotificationsReady, Qt::UniqueConnection);
-        return false;
-    }
+    // Push notifications removed - always use polling
+    return false;
 }
 
 void User::slotRefreshImmediately() {
@@ -1494,59 +1449,10 @@ void User::submitAssistantQuestion(const QString &question)
         return;
     }
 
-    if (!_assistantConnector) {
-        _assistantConnector = new OcsAssistantConnector(_account->account(), this);
-        connect(_assistantConnector, &OcsAssistantConnector::taskTypesFetched, this, &User::slotAssistantTaskTypesFetched);
-        connect(_assistantConnector, &OcsAssistantConnector::tasksFetched, this, &User::slotAssistantTasksFetched);
-        connect(_assistantConnector, &OcsAssistantConnector::taskScheduled, this, &User::slotAssistantTaskScheduled);
-        connect(_assistantConnector, &OcsAssistantConnector::taskDeleted, this, &User::slotAssistantTaskDeleted);
-        connect(_assistantConnector, &OcsAssistantConnector::requestError, this, &User::slotAssistantRequestError);
-    }
-
-    QStringList history;
-    history.reserve(_assistantMessages.size());
-    for (const auto &message : std::as_const(_assistantMessages)) {
-        const auto entry = message.toMap();
-        const auto role = entry.value(QStringLiteral("role")).toString();
-        const auto text = entry.value(QStringLiteral("text")).toString();
-        if (text.isEmpty()) {
-            continue;
-        }
-        const auto historyRole = (role == QLatin1String("assistant")) ? QStringLiteral("assistant") : QStringLiteral("human");
-        const QJsonObject historyEntry{
-            {QStringLiteral("role"), historyRole},
-            {QStringLiteral("content"), text},
-        };
-        history.append(QString::fromUtf8(QJsonDocument(historyEntry).toJson(QJsonDocument::Compact)));
-    }
-
-    _assistantQuestion = trimmedQuestion;
-    emit assistantQuestionChanged();
-
-    _assistantError.clear();
+    // TODO: Replace OcsAssistantConnector with new assistant mechanism
+    _assistantError = tr("Assistant is not available.");
     emit assistantErrorChanged();
-
-    _assistantResponse = tr("Sending your request…");
-    emit assistantResponseChanged();
-
-    _assistantMessages.append(QVariantMap{
-        {QStringLiteral("role"), QStringLiteral("user")},
-        {QStringLiteral("text"), _assistantQuestion},
-    });
-    emit assistantMessagesChanged();
-
-    _assistantRequestInProgress = true;
-    emit assistantRequestInProgressChanged();
-
-    _assistantPollAttempts = 0;
-    _assistantTaskId = -1;
-
-    if (_assistantTaskType.isEmpty()) {
-        _assistantConnector->fetchTaskTypes();
-        return;
-    }
-
-    _assistantConnector->scheduleTask(_assistantQuestion, _assistantTaskType, history);
+    return;
 }
 
 void User::clearAssistantResponse()
@@ -1569,9 +1475,6 @@ void User::clearAssistantResponse()
     }
 
     if (!hadAssistantData) {
-        if (_assistantConnector && taskIdToDelete > 0) {
-            _assistantConnector->deleteTask(taskIdToDelete);
-        }
         return;
     }
     _assistantQuestion.clear();
@@ -1582,114 +1485,26 @@ void User::clearAssistantResponse()
     emit assistantResponseChanged();
     emit assistantErrorChanged();
     emit assistantMessagesChanged();
-    if (_assistantConnector && taskIdToDelete > 0) {
-        _assistantConnector->deleteTask(taskIdToDelete);
-    }
 }
 
 void User::slotAssistantPoll()
 {
-    if (!_assistantConnector || _assistantTaskType.isEmpty()) {
-        _assistantPollTimer.stop();
-        return;
-    }
-
-    if (_assistantPollAttempts >= _assistantMaxPollAttempts) {
-        _assistantPollTimer.stop();
-        _assistantRequestInProgress = false;
-        emit assistantRequestInProgressChanged();
-        if (_assistantResponse.isEmpty()) {
-            _assistantResponse = tr("No response yet. Please try again later.");
-            emit assistantResponseChanged();
-        }
-        return;
-    }
-
-    ++_assistantPollAttempts;
-    _assistantConnector->fetchTasks(_assistantTaskType);
+    // Assistant connector removed - stop polling
+    _assistantPollTimer.stop();
 }
 
 void User::slotAssistantTaskTypesFetched(const QJsonDocument &json, int statusCode)
 {
-    if (statusCode < assistantSuccessMinStatusCode || statusCode >= assistantSuccessMaxStatusCode) {
-        slotAssistantRequestError(QStringLiteral("taskTypes"), statusCode);
-        return;
-    }
-
-    _assistantTaskType = assistantTaskTypeIdFromResponse(json);
-    if (_assistantTaskType.isEmpty()) {
-        _assistantError = tr("No supported assistant task types were returned.");
-        emit assistantErrorChanged();
-        _assistantRequestInProgress = false;
-        emit assistantRequestInProgressChanged();
-        return;
-    }
-
-    QStringList history;
-    history.reserve(_assistantMessages.size());
-    for (const auto &message : std::as_const(_assistantMessages)) {
-        const auto entry = message.toMap();
-        const auto role = entry.value(QStringLiteral("role")).toString();
-        const auto text = entry.value(QStringLiteral("text")).toString();
-        if (text.isEmpty()) {
-            continue;
-        }
-        const auto historyRole = (role == QLatin1String("assistant")) ? QStringLiteral("assistant") : QStringLiteral("human");
-        const QJsonObject historyEntry{
-            {QStringLiteral("role"), historyRole},
-            {QStringLiteral("content"), text},
-        };
-        history.append(QString::fromUtf8(QJsonDocument(historyEntry).toJson(QJsonDocument::Compact)));
-    }
-    _assistantConnector->scheduleTask(_assistantQuestion, _assistantTaskType, history);
+    // Assistant connector removed - no-op
+    Q_UNUSED(json);
+    Q_UNUSED(statusCode);
 }
 
 void User::slotAssistantTasksFetched(const QJsonDocument &json, int statusCode)
 {
-    if (statusCode < assistantSuccessMinStatusCode || statusCode >= assistantSuccessMaxStatusCode) {
-        slotAssistantRequestError(QStringLiteral("tasks"), statusCode);
-        return;
-    }
-
-    const auto tasks = json.object().value("ocs"_L1).toObject().value("data"_L1).toObject().value("tasks"_L1).toArray();
-    auto output = QString{};
-    auto taskIdToDelete = qint64{-1};
-    for (const auto &entry : tasks) {
-        const auto taskObject = entry.toObject();
-        const auto taskId = static_cast<qint64>(taskObject.value("id"_L1).toDouble(-1));
-        if (_assistantTaskId > 0 && taskId != _assistantTaskId) {
-            continue;
-        }
-        output = assistantOutputFromTask(taskObject);
-        if (!assistantTaskStillRunning(taskObject)) {
-            taskIdToDelete = taskId;
-            break;
-        }
-    }
-
-    if (taskIdToDelete == -1) {
-        if (!_assistantPollTimer.isActive()) {
-            _assistantPollAttempts = 0;
-            _assistantPollTimer.start();
-        }
-        return;
-    }
-
-    _assistantPollTimer.stop();
-    _assistantResponse = output;
-    emit assistantResponseChanged();
-    _assistantMessages.append(QVariantMap{
-        {QStringLiteral("role"), QStringLiteral("assistant")},
-        {QStringLiteral("text"), _assistantResponse},
-    });
-    emit assistantMessagesChanged();
-    _assistantResponse.clear();
-    emit assistantResponseChanged();
-    _assistantRequestInProgress = false;
-    emit assistantRequestInProgressChanged();
-    if (taskIdToDelete > 0) {
-        _assistantConnector->deleteTask(taskIdToDelete);
-    }
+    // Assistant connector removed - no-op
+    Q_UNUSED(json);
+    Q_UNUSED(statusCode);
 }
 
 void User::slotAssistantTaskScheduled(const QJsonDocument &json, int statusCode)

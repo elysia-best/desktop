@@ -299,13 +299,13 @@
 			path = FileProviderUIExt;
 			sourceTree = "<group>";
 		};
-		AA0A6B1C2E8EA948007F4A7A /* NextcloudDev */ = {
+		AA0A6B1C2E8EA948007F4A7A /* OpenListDev */ = {
 			isa = PBXGroup;
 			children = (
 				AA826BEE2E8EAA7500CE49C4 /* Build.xcconfig */,
 				AA0A6B1D2E8EA94F007F4A7A /* Craft.sh */,
 			);
-			path = NextcloudDev;
+			path = OpenListDev;
 			sourceTree = "<group>";
 		};
 		AA7F17DF2E70171A0000E928 /* Authentication */ = {
@@ -331,7 +331,7 @@
 			children = (
 				AA27A4E32E93C0D700665051 /* README.md */,
 				C2B573B31B1CD91E00303B36 /* desktopclient */,
-				AA0A6B1C2E8EA948007F4A7A /* NextcloudDev */,
+				AA0A6B1C2E8EA948007F4A7A /* OpenListDev */,
 				C2B573D81B1CD9CE00303B36 /* FinderSyncExt */,
 				538E396B27F4765000FA63D5 /* FileProviderExt */,
 				53B9797F2B84C81F002DA742 /* FileProviderUIExt */,
@@ -398,21 +398,21 @@
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
-		AA0A62F22E8EA929007F4A7A /* NextcloudDev */ = {
+		AA0A62F22E8EA929007F4A7A /* OpenListDev */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "\"$(SOURCE_ROOT)/NextcloudDev/Craft.sh\"";
-			buildConfigurationList = AA0A62F52E8EA929007F4A7A /* Build configuration list for PBXLegacyTarget "NextcloudDev" */;
+			buildArgumentsString = "\"$(SOURCE_ROOT)/OpenListDev/Craft.sh\"";
+			buildConfigurationList = AA0A62F52E8EA929007F4A7A /* Build configuration list for PBXLegacyTarget "OpenListDev" */;
 			buildPhases = (
 			);
 			buildToolPath = /bin/zsh;
 			buildWorkingDirectory = "";
 			dependencies = (
 			);
-			name = NextcloudDev;
+			name = OpenListDev;
 			packageProductDependencies = (
 			);
 			passBuildSettingsInEnvironment = 1;
-			productName = NextcloudDev;
+			productName = OpenListDev;
 		};
 /* End PBXLegacyTarget section */
 
@@ -508,7 +508,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1530;
 				LastUpgradeCheck = 2620;
-				ORGANIZATIONNAME = "Nextcloud GmbH";
+				ORGANIZATIONNAME = "OpenList Team";
 				TargetAttributes = {
 					538E396627F4765000FA63D5 = {
 						CreatedOnToolsVersion = 13.3;
@@ -532,7 +532,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C2B573981B1CD88000303B36 /* Build configuration list for PBXProject "NextcloudIntegration" */;
+			buildConfigurationList = C2B573981B1CD88000303B36 /* Build configuration list for PBXProject "OpenListIntegration" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -659,7 +659,7 @@
 				C2B573D61B1CD9CE00303B36 /* FinderSyncExt */,
 				538E396627F4765000FA63D5 /* FileProviderExt */,
 				53B9797D2B84C81F002DA742 /* FileProviderUIExt */,
-				AA0A62F22E8EA929007F4A7A /* NextcloudDev */,
+				AA0A62F22E8EA929007F4A7A /* OpenListDev */,
 			);
 		};
 /* End PBXProject section */
@@ -1217,7 +1217,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.nextcloud.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.openlist.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
@@ -1264,7 +1264,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.nextcloud.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.openlist.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
@@ -1393,7 +1393,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AA0A62F52E8EA929007F4A7A /* Build configuration list for PBXLegacyTarget "NextcloudDev" */ = {
+		AA0A62F52E8EA929007F4A7A /* Build configuration list for PBXLegacyTarget "OpenListDev" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA0A62F32E8EA929007F4A7A /* Debug */,
@@ -1402,7 +1402,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C2B573981B1CD88000303B36 /* Build configuration list for PBXProject "NextcloudIntegration" */ = {
+		C2B573981B1CD88000303B36 /* Build configuration list for PBXProject "OpenListIntegration" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C2B573991B1CD88000303B36 /* Debug */,

@@ -12,7 +12,6 @@
 #include "creds/credentialsfactory.h"
 #include "creds/abstractcredentials.h"
 #include "creds/keychainchunk.h"
-#include "libsync/clientsideencryption.h"
 #include "libsync/configfile.h"
 #include "libsync/cookiejar.h"
 #include "libsync/theme.h"
@@ -780,9 +779,6 @@ void AccountManager::deleteAccount(OCC::AccountState *account)
 
     const auto settings = ConfigFile::settingsWithGroup(QLatin1String(accountsC));
     settings->remove(account->account()->id());
-
-    // Forget E2E keys
-    account->account()->e2e()->forgetSensitiveData();
 
     account->account()->deleteAppToken();
 

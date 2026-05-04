@@ -13,7 +13,6 @@
 #include <QVariantMap>
 #include <QNetworkReply>
 #include "accountfwd.h"
-#include "clientsideencryption.h"
 
 namespace OCC {
 
@@ -51,8 +50,8 @@ namespace OCC {
                               |
   +---------------------------+
   |
-  +-> checkServerCapabilities --------------v (in parallel)
-        JsonApiJob (cloud/capabilities)
+  +-> checkServerSettings ------------------v (in parallel)
+        JsonApiJob (/api/public/settings)
         +-> slotCapabilitiesRecieved -+
                                       |
     +---------------------------------+
@@ -61,7 +60,7 @@ namespace OCC {
         Utilizes the UserInfo class to fetch the user and avatar image
   +-----------------------------------+
   |
-  +-> Client Side Encryption Checks --+ --reportResult()
+  +-> reportResult()
     \endcode
  */
 
@@ -157,9 +156,6 @@ protected slots:
     void termsOfServiceCheckDone();
 
 private:
-#ifndef TOKEN_AUTH_ONLY
-    void reportConnected();
-#endif
     void reportResult(Status status);
     void checkServerCapabilities();
     void fetchUser();

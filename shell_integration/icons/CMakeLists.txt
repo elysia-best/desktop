@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2021 OpenList contributors
 # SPDX-FileCopyrightText: 2014 ownCloud GmbH
 # SPDX-License-Identifier: GPL-2.0-or-later
 if( UNIX AND NOT APPLE )

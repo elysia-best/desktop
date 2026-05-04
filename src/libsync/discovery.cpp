@@ -221,8 +221,7 @@ void ProcessDirectoryJob::process()
         // Recall file shall not be ignored (#4420)
         const auto isHidden = e.localEntry.isHidden || (!f.first.isEmpty() && f.first[0] == '.' && f.first != QLatin1String(".sys.admin#recall#"));
 
-        const auto isEncryptedFolderButE2eIsNotSetup = e.serverEntry.isValid() && e.serverEntry.isE2eEncrypted() &&
-            _discoveryData->_account->e2e() && !_discoveryData->_account->e2e()->isInitialized();
+        const auto isEncryptedFolderButE2eIsNotSetup = false;
 
         if (isEncryptedFolderButE2eIsNotSetup) {
             checkAndUpdateSelectiveSyncListsForE2eeFolders(path._server + "/");
@@ -1908,7 +1907,7 @@ void ProcessDirectoryJob::processFileFinalize(
         }
     }
 
-    if (item->_direction == SyncFileItem::Up && item->isEncrypted() && !_discoveryData->_account->e2e()->canEncrypt()) {
+    if (item->_direction == SyncFileItem::Up && item->isEncrypted()) {
         item->_instruction = CSYNC_INSTRUCTION_ERROR;
         item->_errorString = tr("Cannot modify encrypted item because the selected certificate is not valid.");
         item->_status = SyncFileItem::Status::NormalError;

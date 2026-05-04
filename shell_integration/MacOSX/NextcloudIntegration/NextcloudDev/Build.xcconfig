@@ -1,4 +1,4 @@
-//  SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
+//  SPDX-FileCopyrightText: 2025 OpenList contributors
 //  SPDX-License-Identifier: GPL-2.0-or-later
 
 //
@@ -21,12 +21,12 @@ DEVELOPMENT_TEAM=$(DEVELOPMENT_TEAM:default=NKUJUXUJ3B)
 //
 // The app name.
 //
-OC_APPLICATION_NAME=$(OC_APPLICATION_NAME:default=Nextcloud)
+OC_APPLICATION_NAME=$(OC_APPLICATION_NAME:default=OpenList)
 
 //
 // Reverse base identifier.
 //
-OC_APPLICATION_REV_DOMAIN=$(OC_APPLICATION_REV_DOMAIN:default=com.nextcloud.desktopclient)
+OC_APPLICATION_REV_DOMAIN=$(OC_APPLICATION_REV_DOMAIN:default=org.openlist.desktopclient)
 
 //
 // Hardened runtime as required for notarization.

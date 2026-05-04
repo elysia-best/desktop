@@ -8,7 +8,6 @@
 #include "account.h"
 #include "helpers.h"
 #include "owncloudpropagator.h"
-#include "clientsideencryption.h"
 #include "common/checksums.h"
 
 #include "creds/abstractcredentials.h"

@@ -10,9 +10,6 @@
 #include "accountmanager.h"
 #include "accountstate.h"
 #include "application.h"
-#include "callstatechecker.h"
-#include "emojimodel.h"
-#include "fileactivitylistmodel.h"
 #include "folderman.h"
 #include "guiutility.h"
 #include "logbrowser.h"
@@ -129,13 +126,9 @@ ownCloudGui::ownCloudGui(Application *parent)
     connect(Logger::instance(), &Logger::guiMessage, this, &ownCloudGui::slotShowGuiMessage);
 
     qmlRegisterType<SyncStatusSummary>("com.openlist.desktopclient", 1, 0, "SyncStatusSummary");
-    qmlRegisterType<EmojiModel>("com.openlist.desktopclient", 1, 0, "EmojiModel");
-    qmlRegisterType<UserStatusSelectorModel>("com.openlist.desktopclient", 1, 0, "UserStatusSelectorModel");
     qmlRegisterType<ActivityListModel>("com.openlist.desktopclient", 1, 0, "ActivityListModel");
-    qmlRegisterType<FileActivityListModel>("com.openlist.desktopclient", 1, 0, "FileActivityListModel");
     qmlRegisterType<SortedActivityListModel>("com.openlist.desktopclient", 1, 0, "SortedActivityListModel");
     qmlRegisterType<WheelHandler>("com.openlist.desktopclient", 1, 0, "WheelHandler");
-    qmlRegisterType<CallStateChecker>("com.openlist.desktopclient", 1, 0, "CallStateChecker");
     qmlRegisterType<Quick::DateFieldBackend>("com.openlist.desktopclient", 1, 0, "DateFieldBackend");
     qmlRegisterType<FileDetails>("com.openlist.desktopclient", 1, 0, "FileDetails");
     qmlRegisterType<ShareModel>("com.openlist.desktopclient", 1, 0, "ShareModel");
@@ -150,7 +143,6 @@ ownCloudGui::ownCloudGui(Application *parent)
     qmlRegisterUncreatableType<UnifiedSearchResultsListModel>("com.openlist.desktopclient", 1, 0, "UnifiedSearchResultsListModel", "UnifiedSearchResultsListModel");
     qmlRegisterUncreatableType<UserStatus>("com.openlist.desktopclient", 1, 0, "userStatus", "Access to Status enum");
     qmlRegisterUncreatableType<Sharee>("com.openlist.desktopclient", 1, 0, "sharee", "Access to Type enum");
-    qmlRegisterUncreatableType<ClientSideEncryptionTokenSelector>("com.openlist.desktopclient", 1, 0, "ClientSideEncryptionTokenSelector", "Access to the certificate selector");
 
     qRegisterMetaType<ActivityListModel *>("ActivityListModel*");
     qRegisterMetaType<UnifiedSearchResultsListModel *>("UnifiedSearchResultsListModel*");

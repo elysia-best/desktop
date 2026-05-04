@@ -24,14 +24,10 @@
 #include "folderman.h"
 #include "userinfo.h"
 #include "userstatusconnector.h"
-#include "userstatusselectormodel.h"
 #include <chrono>
 
 namespace OCC {
 class UnifiedSearchResultsListModel;
-class OcsAssistantConnector;
-
-
 class TrayFolderInfo
 {
     Q_GADGET
@@ -262,7 +258,6 @@ private:
     int _lastQuotaPercent = 0;
     Activity _lastQuotaActivity;
 
-    QPointer<OcsAssistantConnector> _assistantConnector;
     QTimer _assistantPollTimer;
     int _assistantPollAttempts = 0;
     int _assistantMaxPollAttempts = 60;

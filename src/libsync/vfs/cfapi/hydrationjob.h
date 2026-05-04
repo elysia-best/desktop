@@ -12,14 +12,9 @@ class QLocalServer;
 class QLocalSocket;
 
 namespace OCC {
-class EncryptedFolderMetadataHandler;
 class GETFileJob;
 class SyncJournalDb;
 class VfsCfApi;
-
-namespace EncryptionHelper {
-    class StreamingDecryptor;
-};
 
 class HydrationJob : public QObject
 {
@@ -76,9 +71,6 @@ public:
 signals:
     void finished(HydrationJob *job);
 
-private slots:
-    void slotFetchMetadataJobFinished(int statusCode, const QString &message);
-
 private:
     void emitFinished(Status status);
 
@@ -87,7 +79,6 @@ private:
     void onGetFinished();
 
     void handleNewConnection();
-    void handleNewConnectionForEncryptedFile();
 
     void startServerAndWaitForConnections();
 
@@ -115,7 +106,6 @@ private:
     QString _errorString;
     QString _remoteParentPath;
 
-    QScopedPointer<EncryptedFolderMetadataHandler> _encryptedFolderMetadataHandler;
 };
 
 } // namespace OCC
