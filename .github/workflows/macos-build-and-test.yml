@@ -24,7 +24,7 @@ on:
 
 jobs:
   build:
-    name: Build openlist-client
+    name: Build nextcloud-client
     timeout-minutes: 60
     runs-on: macos-latest
     steps:
@@ -58,9 +58,9 @@ jobs:
             ${{ github.workspace }}/${{ inputs.CRAFT_TARGET }}
           key: ${{ runner.os }}-craft-${{ hashFiles(inputs.CRAFT_MASTER_CONFIG) }}
 
-      - name: Build openlist-client
+      - name: Build nextcloud-client
         run: |
-          python "${{ inputs.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ inputs.CRAFT_MASTER_CONFIG }}" --target ${{ inputs.CRAFT_TARGET }} -c --options openlist-client.srcDir=${{ github.workspace }} --options openlist-client.buildFileProviderModule=${{ inputs.buildFileProviderModule }} openlist-client
+          python "${{ inputs.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ inputs.CRAFT_MASTER_CONFIG }}" --target ${{ inputs.CRAFT_TARGET }} -c --options nextcloud-client.srcDir=${{ github.workspace }} --options nextcloud-client.buildFileProviderModule=${{ inputs.buildFileProviderModule }} nextcloud-client
 
       - name: Cache Craft directories containing the built client
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -89,5 +89,5 @@ jobs:
 
       - name: Run tests
         run: |
-          cd ${{ github.workspace }}/${{ inputs.CRAFT_TARGET }}/build/openlist-client/work/build
+          cd ${{ github.workspace }}/${{ inputs.CRAFT_TARGET }}/build/nextcloud-client/work/build
           ctest --output-on-failure --output-junit testResult.xml

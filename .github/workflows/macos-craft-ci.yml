@@ -77,7 +77,7 @@ jobs:
       - name: Install Craft OpenList client dependencies
         if: steps.cache-craft-restore.outputs.cache-hit != 'true'
         run: |
-          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps openlist-client  # TODO: Verify Craft package name openlist-client exists
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps nextcloud-client  # TODO: Rename to openlist-client after OpenList Craft blueprints exist
 
       - name: Cache Craft directories
         if: steps.cache-craft-restore.outputs.cache-hit != 'true'

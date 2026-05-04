@@ -34,7 +34,7 @@ jobs:
           craft --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo (https://github.com/openlist/craft-blueprints-kde.git)
           craft --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo (https://github.com/openlist/desktop-client-blueprints.git)
           craft craft
-          craft --install-deps openlist-client  # TODO: Verify Craft package name openlist-client exists
+          craft --install-deps nextcloud-client  # TODO: Rename to openlist-client after OpenList Craft blueprints exist
           
       - name: Cache Install OpenCppCoverage
         id: cache-install-opencppcoverage
@@ -76,13 +76,13 @@ jobs:
               if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
           }
           
-          craft --src-dir ${{ github.workspace }} openlist-client  # TODO: Verify Craft package name openlist-client exists
+          craft --src-dir ${{ github.workspace }} nextcloud-client  # TODO: Rename to openlist-client after OpenList Craft blueprints exist
           
       - name: Run tests with coverage
         shell: pwsh
         run: |
           function runTests() {
-              $buildFolder = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\openlist-client\work\build"  # TODO: Verify Craft build path for openlist-client
+              $buildFolder = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\nextcloud-client\work\build"  # TODO: Update path to openlist-client after OpenList Craft blueprints exist
 
               cd $buildFolder
 

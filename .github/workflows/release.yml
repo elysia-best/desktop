@@ -135,21 +135,21 @@ jobs:
       - name: Install Craft dependencies
         if: steps.cache-craft.outputs.cache-hit != 'true'
         run: |
-          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps openlist-client  # TODO: Verify Craft package name
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --install-deps nextcloud-client  # TODO: Verify Craft package name
 
-      - name: Build openlist-client
+      - name: Build nextcloud-client
         run: |
-          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --options openlist-client.srcDir=${{ github.workspace }} --options openlist-client.buildFileProviderModule=True openlist-client  # TODO: Verify Craft package name
+          python "${{ env.CRAFT_MASTER_LOCATION }}/CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c --options nextcloud-client.srcDir=${{ github.workspace }} --options nextcloud-client.buildFileProviderModule=True nextcloud-client  # TODO: Verify Craft package name
 
       - name: Package DMG
         run: |
-          BUILD_DIR="${{ github.workspace }}/${{ env.CRAFT_TARGET }}/build/openlist-client/work/build"
+          BUILD_DIR="${{ github.workspace }}/${{ env.CRAFT_TARGET }}/build/nextcloud-client/work/build"
           cd "$BUILD_DIR"
           cpack -G DragNDrop
 
       - name: Find and upload DMG
         run: |
-          DMG=$(find "${{ github.workspace }}/${{ env.CRAFT_TARGET }}/build/openlist-client/work/build" -maxdepth 1 -name "*.dmg" | head -1)
+          DMG=$(find "${{ github.workspace }}/${{ env.CRAFT_TARGET }}/build/nextcloud-client/work/build" -maxdepth 1 -name "*.dmg" | head -1)
           if [ -z "$DMG" ]; then
             # DMG may have been placed elsewhere by Craft
             DMG=$(find "${{ github.workspace }}/${{ env.CRAFT_TARGET }}" -name "*.dmg" | head -1)
@@ -211,21 +211,21 @@ jobs:
           craft --add-blueprint-repository "https://github.com/nextcloud/craft-blueprints-kde.git|master|"  # TODO: Update to OpenList blueprint repo
           craft --add-blueprint-repository "https://github.com/nextcloud/desktop-client-blueprints.git|master|"  # TODO: Update to OpenList blueprint repo
           craft craft
-          craft --install-deps openlist-client  # TODO: Verify Craft package name
+          craft --install-deps nextcloud-client  # TODO: Verify Craft package name
 
-      - name: Build openlist-client
+      - name: Build nextcloud-client
         shell: pwsh
         run: |
           function craft() {
               python "${{ env.CRAFT_MASTER_LOCATION }}\CraftMaster.py" --config "${{ env.CRAFT_MASTER_CONFIG }}" --target ${{ env.CRAFT_TARGET }} -c $args
               if($LASTEXITCODE -ne 0) {exit $LASTEXITCODE}
           }
-          craft --src-dir ${{ github.workspace }} openlist-client  # TODO: Verify Craft package name
+          craft --src-dir ${{ github.workspace }} nextcloud-client  # TODO: Verify Craft package name
 
       - name: Package MSI
         shell: pwsh
         run: |
-          $buildDir = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\openlist-client\work\build"
+          $buildDir = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\nextcloud-client\work\build"
           cd $buildDir
           & cpack -G WIX
 
