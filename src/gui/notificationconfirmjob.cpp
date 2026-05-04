@@ -9,6 +9,7 @@
 #include "account.h"
 
 #include <QBuffer>
+#include <QRegularExpression>
 
 namespace OCC {
 
