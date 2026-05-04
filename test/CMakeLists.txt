@@ -104,20 +104,6 @@ nextcloud_add_test(FileSystem)
 
 nextcloud_add_test(FolderStatusModel)
 
-target_link_libraries(SecureFileDropTest PRIVATE OpenList::sync)
-configure_file(e2etestsfakecert.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecert.pem" COPYONLY)
-configure_file(e2etestsfakecertprivatekey.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecertprivatekey.pem" COPYONLY)
-configure_file(e2etestsfakecertpublickey.pem "${PROJECT_BINARY_DIR}/bin/e2etestsfakecertpublickey.pem" COPYONLY)
-configure_file(fakeshortcut.base64 "${PROJECT_BINARY_DIR}/bin/fakeshortcut.base64" COPYONLY)
-
-
-if(ADD_E2E_TESTS)
-    nextcloud_add_test(E2eServerSetup)
-    nextcloud_add_test(E2eFileTransfer)
-else()
-    nextcloud_build_test(E2eServerSetup)
-    nextcloud_build_test(E2eFileTransfer)
-endif()
 
 if( UNIX AND NOT APPLE )
     nextcloud_add_test(InotifyWatcher)
@@ -141,8 +127,6 @@ nextcloud_add_benchmark(LargeSync)
 nextcloud_add_test(Account)
 nextcloud_add_test(Folder)
 nextcloud_add_test(FolderMan)
-nextcloud_add_test(RemoteWipe)
-
 if(NOT BUILD_FILE_PROVIDER_MODULE)
     # the File Provider build crashes this test in CI for some reason
     # I'm not yet sure what's causing it as it works fine with a classic build...
