@@ -10,7 +10,6 @@
 
 namespace OCC {
 
-class PropagateUploadEncrypted;
 
 /**
  * @brief The PropagateRemoteMkdir class
@@ -21,7 +20,6 @@ class PropagateRemoteMkdir : public PropagateItemJob
     Q_OBJECT
     QPointer<AbstractNetworkJob> _job;
     bool _deleteExisting = false;
-    PropagateUploadEncrypted *_uploadEncryptedHelper = nullptr;
     friend class PropagateDirectory; // So it can access the _item;
 public:
     PropagateRemoteMkdir(OwncloudPropagator *propagator, const SyncFileItemPtr &item);
@@ -43,9 +41,7 @@ public:
 private slots:
     void slotMkdir();
     void slotStartMkcolJob();
-    void slotStartEncryptedMkcolJob(const QString &path, const QString &filename, quint64 size);
     void slotMkcolJobFinished();
-    void slotEncryptFolderFinished(int status, OCC::EncryptionStatusEnums::ItemEncryptionStatus encryptionStatus);
     void success();
 
 private:

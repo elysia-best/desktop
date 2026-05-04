@@ -397,8 +397,8 @@ void AccountState::slotConnectionValidatorResult(ConnectionValidator::Status sta
             // Get the Apps available on the server.
             fetchNavigationApps();
 
-            // Setup push notifications after a successful connection
-            account()->trySetupPushNotifications();
+
+
         }
         break;
     case ConnectionValidator::Undefined:

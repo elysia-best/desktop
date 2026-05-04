@@ -712,9 +712,9 @@ void User::slotNotificationRequestFinished(int statusCode)
     int row = sender()->property("activityRow").toInt();
 
     // the ocs API returns stat code 100 or 200 or 202 inside the xml if it succeeded.
-    if (statusCode != OCS_SUCCESS_STATUS_CODE
-        && statusCode != OCS_SUCCESS_STATUS_CODE_V2
-        && statusCode != OCS_ACCEPTED_STATUS_CODE) {
+    if (statusCode != 100
+        && statusCode != 200
+        && statusCode != 202) {
         qCWarning(lcActivity) << "Notification Request to Server failed, leave notification visible.";
     } else {
         // to do use the model to rebuild the list or remove the item

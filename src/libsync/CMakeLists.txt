@@ -63,6 +63,8 @@ set(libsync_SRCS
     openlisttheme.cpp
     openlistsettings.h
     openlistsettings.cpp
+    userstatusconnector.h
+    userstatusconnector.cpp
     deletejob.h
     deletejob.cpp
     progressdispatcher.h

@@ -162,7 +162,7 @@ void Share::setPermissions(Permissions permissions)
                 reply->errorString());
             return;
         }
-        slotPermissionsSet(QJsonDocument(), permissions);
+        slotPermissionsSet(QJsonDocument(), QVariant(static_cast<int>(permissions)));
     });
 }
 

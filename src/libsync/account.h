@@ -53,6 +53,8 @@ class AbstractCredentials;
 class AccessManager;
 class SimpleNetworkJob;
 class SyncJournalDb;
+class UserStatusConnector;
+class PushNotifications;
 
 /**
  * @brief Reimplement this to handle SSL errors from libsync
@@ -343,6 +345,12 @@ public:
     void updateServerSubcription();
     void updateDesktopEnterpriseChannel();
 
+    void setupUserStatusConnector();
+    [[nodiscard]] std::shared_ptr<UserStatusConnector> userStatusConnector() const;
+
+    void trySetupPushNotifications();
+    [[nodiscard]] PushNotifications *pushNotifications() const;
+
     // Network-related settings
     [[nodiscard]] QNetworkProxy::ProxyType proxyType() const;
     void setProxyType(QNetworkProxy::ProxyType proxyType);
@@ -454,6 +462,12 @@ signals:
 
     void rootFolderQuotaChanged(const int64_t &usedBytes, const int64_t &availableBytes);
 
+    void userStatusChanged();
+    void serverUserStatusChanged();
+    void lockFileSuccess();
+    void lockFileError(const QString &message);
+    void pushNotificationsReady(const OCC::AccountPtr &account);
+
 protected Q_SLOTS:
     void slotCredentialsFetched();
     void slotCredentialsAsked();
@@ -510,6 +524,9 @@ private:
     static QString _configFileName;
 
     bool _wroteAppPassword = false;
+
+    std::shared_ptr<UserStatusConnector> _userStatusConnector;
+    PushNotifications *_pushNotifications = nullptr;
 
     friend class AccountManager;
 

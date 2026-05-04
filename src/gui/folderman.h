@@ -35,7 +35,6 @@ class Application;
 class SyncResult;
 class SocketApi;
 class LockWatcher;
-class UpdateE2eeFolderUsersMetadataJob;
 
 /**
  * @brief The FolderMan class
@@ -403,7 +402,7 @@ private:
     NavigationPaneHelper _navigationPaneHelper;
 #endif
 
-    QPointer<UpdateE2eeFolderUsersMetadataJob> _removeE2eeShareJob;
+
 
     bool _appRestartRequired = false;
 

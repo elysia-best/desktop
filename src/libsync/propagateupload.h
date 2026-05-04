@@ -171,7 +171,6 @@ signals:
     void finishedSignal();
 };
 
-class PropagateUploadEncrypted;
 
 /**
  * @brief The PropagateUploadFileCommon class is the code common between all chunking algorithms
@@ -196,11 +195,6 @@ class PropagateUploadEncrypted;
 class PropagateUploadFileCommon : public PropagateItemJob
 {
     Q_OBJECT
-
-    struct UploadStatus {
-        SyncFileItem::Status status = SyncFileItem::NoStatus;
-        QString message;
-    };
 
 protected:
     QVector<AbstractNetworkJob *> _jobs; /// network jobs that are currently in transit
@@ -242,10 +236,8 @@ public:
 
     /* start should setup the file, path and size that will be send to the server */
     void start() override;
-    void setupEncryptedFile(const QString& path, const QString& filename, quint64 size);
     void setupUnencryptedFile();
     void startUploadFile();
-    void callUnlockFolder();
     bool isLikelyFinishedQuickly() override { return _item->_size < propagator()->smallFileSize(); }
 
 private slots:
@@ -254,8 +246,6 @@ private slots:
     void slotComputeTransmissionChecksum(const QByteArray &contentChecksumType, const QByteArray &contentChecksum);
     // transmission checksum computed, prepare the upload
     void slotStartUpload(const QByteArray &transmissionChecksumType, const QByteArray &transmissionChecksum);
-    // invoked when encrypted folder lock has been released
-    void slotFolderUnlocked(const QByteArray &folderId, int httpReturnCode);
     // invoked on internal error to unlock a folder and failed
     void slotOnErrorStartFolderUnlock(OCC::SyncFileItem::Status status, const QString &errorString);
 
@@ -309,9 +299,6 @@ protected:
     /** Bases headers that need to be sent on the PUT, or in the MOVE for chunking-ng */
     QMap<QByteArray, QByteArray> headers();
 private:
-  PropagateUploadEncrypted *_uploadEncryptedHelper = nullptr;
-  bool _uploadingEncrypted = false;
-  UploadStatus _uploadStatus;
 };
 
 /**

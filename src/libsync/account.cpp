@@ -18,6 +18,7 @@
 #include "version.h"
 
 #include "deletejob.h"
+#include "userstatusconnector.h"
 
 #include "common/syncjournaldb.h"
 #include "common/asserts.h"
@@ -65,6 +66,7 @@ Account::Account(QObject *parent)
 {
     qRegisterMetaType<AccountPtr>("AccountPtr");
     qRegisterMetaType<Account *>("Account*");
+    setupUserStatusConnector();
 }
 
 AccountPtr Account::create()
@@ -919,6 +921,15 @@ void Account::removeLockStatusChangeInprogress(const QString &serverRelativePath
     }
 }
 
+void Account::setLockFileState(const QString & /*serverRelativePath*/,
+                              const QString & /*remoteSyncPathWithTrailingSlash*/,
+                              const QString & /*localSyncPath*/, const QString & /*etag*/,
+                              SyncJournalDb * const /*journal*/,
+                              const SyncFileItem::LockStatus /*lockStatus*/,
+                              const SyncFileItem::LockOwnerType /*lockOwnerType*/)
+{
+}
+
 SyncFileItem::LockStatus Account::fileLockStatus(SyncJournalDb * const journal,
                                                  const QString &folderRelativePath) const
 {
@@ -1347,6 +1358,42 @@ bool Account::serverHasIntegration() const
 void Account::updateServerHasIntegration()
 {
     _serverHasIntegration = capabilities().serverHasClientIntegration();
+}
+
+namespace {
+
+class StubUserStatusConnector : public UserStatusConnector
+{
+public:
+    using UserStatusConnector::UserStatusConnector;
+
+    void fetchUserStatus() override {}
+    void fetchPredefinedStatuses() override {}
+    void setUserStatus(const UserStatus &) override {}
+    void clearMessage() override {}
+    [[nodiscard]] UserStatus userStatus() const override { return {}; }
+    [[nodiscard]] bool supportsBusyStatus() const override { return false; }
+};
+
+}
+
+void Account::setupUserStatusConnector()
+{
+    _userStatusConnector = std::make_shared<StubUserStatusConnector>();
+}
+
+std::shared_ptr<UserStatusConnector> Account::userStatusConnector() const
+{
+    return _userStatusConnector;
+}
+
+void Account::trySetupPushNotifications()
+{
+}
+
+PushNotifications *Account::pushNotifications() const
+{
+    return _pushNotifications;
 }
 
 } // namespace OCC

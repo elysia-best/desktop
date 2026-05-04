@@ -6,7 +6,7 @@
 
 #include "config.h"
 #include "propagateupload.h"
-#include "propagateuploadencrypted.h"
+
 #include "owncloudpropagator_p.h"
 #include "networkjobs.h"
 #include "account.h"
@@ -225,41 +225,11 @@ void PropagateUploadFileCommon::start()
         return;
     }
 
-    const auto account = propagator()->account();
-
-    if (!account->capabilities().clientSideEncryptionAvailable() ||
-        !parentRec.isValid() ||
-        !parentRec.isE2eEncrypted()) {
-        setupUnencryptedFile();
-        return;
-    }
-
-    const auto remoteParentPath = parentRec._e2eMangledName.isEmpty() ? parentPath : parentRec._e2eMangledName;
-    _uploadEncryptedHelper = new PropagateUploadEncrypted(propagator(), remoteParentPath, _item, this);
-    connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::finalized,
-            this, &PropagateUploadFileCommon::setupEncryptedFile);
-    connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::error, [this] {
-        qCWarning(lcPropagateUpload) << "Error setting up encryption.";
-        done(SyncFileItem::FatalError, tr("Failed to upload encrypted file."));
-    });
-    _uploadEncryptedHelper->start();
-}
-
-void PropagateUploadFileCommon::setupEncryptedFile(const QString& path, const QString& filename, quint64 size)
-{
-    qCDebug(lcPropagateUpload) << "Starting to upload encrypted file" << path << filename << size;
-    _uploadingEncrypted = true;
-    _item->_e2eEncryptionStatus = EncryptionStatusEnums::ItemEncryptionStatus::EncryptedMigratedV2_0;
-    Q_ASSERT(_item->isEncrypted());
-    _fileToUpload._path = path;
-    _fileToUpload._file = filename;
-    _fileToUpload._size = size;
-    startUploadFile();
+    setupUnencryptedFile();
 }
 
 void PropagateUploadFileCommon::setupUnencryptedFile()
 {
-    _uploadingEncrypted = false;
     _fileToUpload._file = _item->_file;
     _fileToUpload._size = _item->_size;
     _fileToUpload._path = propagator()->fullLocalPath(_fileToUpload._file);
@@ -446,27 +416,9 @@ void PropagateUploadFileCommon::slotStartUpload(const QByteArray &transmissionCh
     doStartUpload();
 }
 
-void PropagateUploadFileCommon::slotFolderUnlocked(const QByteArray &folderId, int httpReturnCode)
-{
-    if (_uploadStatus.status == SyncFileItem::NoStatus && httpReturnCode != 200) {
-        qDebug() << "Failed to unlock encrypted folder" << folderId;
-        done(SyncFileItem::FatalError, tr("Failed to unlock encrypted folder."));
-    } else {
-        done(_uploadStatus.status, _uploadStatus.message);
-    }
-}
-
 void PropagateUploadFileCommon::slotOnErrorStartFolderUnlock(SyncFileItem::Status status, const QString &errorString)
 {
-    if (_uploadingEncrypted) {
-        Q_ASSERT(_item->isEncrypted());
-
-        _uploadStatus = { status, errorString };
-        connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::folderUnlocked, this, &PropagateUploadFileCommon::slotFolderUnlocked);
-        _uploadEncryptedHelper->unlockFolder();
-    } else {
-        done(status, errorString);
-    }
+    done(status, errorString);
 }
 
 UploadDevice::UploadDevice(const QString &fileName, qint64 start, qint64 size, BandwidthManager *bwm)
@@ -817,15 +769,7 @@ void PropagateUploadFileCommon::finalize()
     propagator()->_journal->setUploadInfo(_item->_file, SyncJournalDb::UploadInfo());
     propagator()->_journal->commit("upload file start");
 
-    if (_uploadingEncrypted) {
-        Q_ASSERT(_item->isEncrypted());
-
-        _uploadStatus = { SyncFileItem::Success, QString() };
-        connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::folderUnlocked, this, &PropagateUploadFileCommon::slotFolderUnlocked);
-        _uploadEncryptedHelper->unlockFolder();
-    } else {
-        done(SyncFileItem::Success);
-    }
+    done(SyncFileItem::Success);
 }
 
 void PropagateUploadFileCommon::abortNetworkJobs(

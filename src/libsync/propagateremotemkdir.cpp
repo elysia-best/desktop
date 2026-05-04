@@ -8,10 +8,10 @@
 #include "owncloudpropagator_p.h"
 #include "account.h"
 #include "common/syncjournalfilerecord.h"
-#include "propagateuploadencrypted.h"
+
 #include "deletejob.h"
 #include "common/asserts.h"
-#include "encryptfolderjob.h"
+
 #include "filesystem.h"
 #include "csync/csync.h"
 
@@ -73,27 +73,6 @@ void PropagateRemoteMkdir::slotStartMkcolJob()
     _job->start();
 }
 
-void PropagateRemoteMkdir::slotStartEncryptedMkcolJob(const QString &path, const QString &filename, quint64 size)
-{
-    Q_UNUSED(path)
-    Q_UNUSED(size)
-
-    if (propagator()->_abortRequested)
-        return;
-
-    qDebug() << filename;
-    qCDebug(lcPropagateRemoteMkdir) << filename;
-
-    auto job = new MkColJob(propagator()->account(),
-                            propagator()->fullRemotePath(filename),
-                            {{"e2e-token", _uploadEncryptedHelper->folderToken() }},
-                            this);
-    connect(job, &MkColJob::finishedWithError, this, &PropagateRemoteMkdir::slotMkcolJobFinished);
-    connect(job, &MkColJob::finishedWithoutError, this, &PropagateRemoteMkdir::slotMkcolJobFinished);
-    _job = job;
-    _job->start();
-}
-
 void PropagateRemoteMkdir::abort(PropagatorJob::AbortType abortType)
 {
     if (_job && _job->reply())
@@ -143,28 +122,7 @@ void PropagateRemoteMkdir::finalizeMkColJob(QNetworkReply::NetworkError err, con
         _item->_isShared = _item->_remotePerm.hasPermission(RemotePermissions::IsShared) || _item->_sharedByMe;
         _item->_lastShareStateFetchedTimestamp = QDateTime::currentMSecsSinceEpoch();
 
-        if (!_uploadEncryptedHelper && !_item->isEncrypted()) {
-            success();
-        } else {
-            // We still need to mark that folder encrypted in case we were uploading it as encrypted one
-            // Another scenario, is we are creating a new folder because of move operation on an encrypted folder that works via remove + re-upload
-            propagator()->_activeJobList.append(this);
-
-            // We're expecting directory path in /Foo/Bar convention...
-            Q_ASSERT(jobPath.startsWith('/') && !jobPath.endsWith('/'));
-            // But encryption job expect it in Foo/Bar/ convention
-            auto job = new OCC::EncryptFolderJob(propagator()->account(),
-                                                 propagator()->_journal,
-                                                 jobPath.mid(1),
-                                                 _item->_file,
-                                                 propagator()->remotePath(),
-                                                 _item->_fileId,
-                                                 propagator(),
-                                                 _item);
-            job->setParent(this);
-            connect(job, &OCC::EncryptFolderJob::finished, this, &PropagateRemoteMkdir::slotEncryptFolderFinished);
-            job->start();
-        }
+        success();
     });
     connect(propfindJob, &PropfindJob::finishedWithError, this, [this] (QNetworkReply *reply) {
         const auto err = reply ? reply->error() : QNetworkReply::NetworkError::UnknownNetworkError;
@@ -199,19 +157,7 @@ void PropagateRemoteMkdir::slotMkdir()
         return;
     }
 
-    if (!hasEncryptedAncestor()) {
-        slotStartMkcolJob();
-        return;
-    }
-
-    // We should be encrypted as well since our parent is
-    const auto remoteParentPath = parentRec._e2eMangledName.isEmpty() ? parentPath : parentRec._e2eMangledName;
-    _uploadEncryptedHelper = new PropagateUploadEncrypted(propagator(), remoteParentPath, _item, this);
-    connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::finalized,
-      this, &PropagateRemoteMkdir::slotStartEncryptedMkcolJob);
-    connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::error,
-      []{ qCWarning(lcPropagateRemoteMkdir) << "Error setting up encryption."; });
-    _uploadEncryptedHelper->start();
+    slotStartMkcolJob();
 }
 
 void PropagateRemoteMkdir::slotMkcolJobFinished()
@@ -234,31 +180,7 @@ void PropagateRemoteMkdir::slotMkcolJobFinished()
 
     const auto jobPath = _job->path();
 
-    if (_uploadEncryptedHelper && _uploadEncryptedHelper->isFolderLocked() && !_uploadEncryptedHelper->isUnlockRunning()) {
-        // since we are done, we need to unlock a folder in case it was locked
-        connect(_uploadEncryptedHelper, &PropagateUploadEncrypted::folderUnlocked, this, [this, err, jobHttpReasonPhraseString, jobPath]() {
-            finalizeMkColJob(err, jobHttpReasonPhraseString, jobPath);
-        });
-        _uploadEncryptedHelper->unlockFolder();
-    } else {
-        finalizeMkColJob(err, jobHttpReasonPhraseString, jobPath);
-    }
-}
-
-void PropagateRemoteMkdir::slotEncryptFolderFinished(int status, EncryptionStatusEnums::ItemEncryptionStatus encryptionStatus)
-{
-    if (status != EncryptFolderJob::Success) {
-        done(SyncFileItem::FatalError, tr("Failed to encrypt a folder %1").arg(_item->_file), ErrorCategory::GenericError);
-        return;
-    }
-    qCDebug(lcPropagateRemoteMkdir) << "Success making the new folder encrypted";
-    propagator()->_activeJobList.removeOne(this);
-    _item->_e2eEncryptionStatus = encryptionStatus;
-    _item->_e2eEncryptionStatusRemote = encryptionStatus;
-    if (_item->isEncrypted()) {
-        _item->_e2eEncryptionServerCapability = EncryptionStatusEnums::fromEndToEndEncryptionApiVersion(propagator()->account()->capabilities().clientSideEncryptionVersion());
-    }
-    success();
+    finalizeMkColJob(err, jobHttpReasonPhraseString, jobPath);
 }
 
 void PropagateRemoteMkdir::success()

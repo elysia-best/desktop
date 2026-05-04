@@ -23,7 +23,7 @@ Q_LOGGING_CATEGORY(lcOpenListCredentials, "openlist.sync.credentials", QtInfoMsg
 namespace {
 
 constexpr char authTypeC[] = "openlist";
-constexpr char userC[] = "user";
+constexpr char openlistUserC[] = "user";
 constexpr char tokenKeychainSuffix[] = ":token";
 
 /** AccessManager subclass that injects the JWT token header. */
@@ -50,7 +50,7 @@ protected:
     }
 
 private:
-    QPointer<const OpenListCredentials> _cred;
+    const OpenListCredentials *_cred;
 };
 
 } // namespace
@@ -61,7 +61,7 @@ void OpenListCredentials::setAccount(Account *account)
 {
     AbstractCredentials::setAccount(account);
     if (_user.isEmpty()) {
-        _user = _account->credentialSetting(QLatin1String(userC)).toString();
+        _user = _account->credentialSetting(QLatin1String(openlistUserC)).toString();
     }
 }
 
@@ -106,7 +106,7 @@ void OpenListCredentials::fetchFromKeychain(const QString &appName)
         return;
     }
 
-    _user = _account->credentialSetting(QLatin1String(userC)).toString();
+    _user = _account->credentialSetting(QLatin1String(openlistUserC)).toString();
 
     const auto key = keychainKey();
     auto *job = new QKeychain::ReadPasswordJob(Theme::instance()->appName(), this);
@@ -161,7 +161,7 @@ void OpenListCredentials::persist()
         return;
     }
 
-    _account->setCredentialSetting(QLatin1String(userC), _user);
+    _account->setCredentialSetting(QLatin1String(openlistUserC), _user);
 
     const auto key = keychainKey();
     auto *job = new QKeychain::WritePasswordJob(Theme::instance()->appName(), this);

@@ -12,7 +12,6 @@
 #include "propagatorjobs.h"
 #include "filesystem.h"
 #include "account.h"
-#include "propagatedownloadencrypted.h"
 
 #include <QDir>
 

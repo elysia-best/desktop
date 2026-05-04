@@ -16,7 +16,7 @@
 #include "folderman.h"
 #include "sharepermissions.h"
 #include "theme.h"
-#include "updatee2eefolderusersmetadatajob.h"
+
 
 namespace {
 
@@ -943,43 +943,8 @@ void ShareModel::slotShareExpireDateSet(const QString &shareId)
 
 void ShareModel::slotDeleteE2EeShare(const SharePtr &share) const
 {
-    const auto account = accountState()->account();
-    QString folderAlias;
-    for (const auto &f : FolderMan::instance()->map()) {
-        if (f->accountState()->account() != account) {
-            continue;
-        }
-        const auto folderPath = f->remotePath();
-        if (share->path().startsWith(folderPath) && (share->path() == folderPath || folderPath.endsWith('/') || share->path()[folderPath.size()] == '/')) {
-            folderAlias = f->alias();
-        }
-    }
-
-    auto folder = FolderMan::instance()->folder(folderAlias);
-    if (!folder || !folder->journalDb()) {
-        emit serverError(404, tr("Could not find local folder for %1").arg(share->path()));
-        return;
-    }
-
-    Q_ASSERT(folder->remotePath() == QStringLiteral("/")
-             || Utility::noLeadingSlashPath(share->path()).startsWith(Utility::noLeadingSlashPath(Utility::noTrailingSlashPath(folder->remotePath()))));
-
-    const auto removeE2eeShareJob = new UpdateE2eeFolderUsersMetadataJob(account,
-                                                                         folder->journalDb(),
-                                                                         folder->remotePath(),
-                                                                         UpdateE2eeFolderUsersMetadataJob::Remove,
-                                                                         share->path(),
-                                                                         share->getShareWith()->shareWith());
-    removeE2eeShareJob->setParent(_manager.data());
-    removeE2eeShareJob->start();
-    connect(removeE2eeShareJob, &UpdateE2eeFolderUsersMetadataJob::finished, this, [share, this](int code, const QString &message) {
-        if (code != 200) {
-            qCWarning(lcShareModel) << "Could not remove share from E2EE folder's metadata!";
-            emit serverError(code, message);
-            return;
-        }
-        share->deleteShare();
-    });
+    // E2EE is no longer supported, fall back to regular share deletion
+    share->deleteShare();
 }
 
 // ----------------------- Shares modification slots ----------------------- //
@@ -1236,15 +1201,7 @@ void ShareModel::createNewUserGroupShare(const ShareePtr &sharee)
         return;
     }
 
-    if (isSecureFileDropSupportedFolder()) {
-        if (!_synchronizationFolder) {
-            qCWarning(lcShareModel) << "Could not share an E2EE folder" << _localPath << "no responsible folder found";
-            return;
-        }
-        _manager->createE2EeShareJob(_sharePath, sharee, _maxSharingPermissions, {});
-    } else {
-        _manager->createShare(_sharePath, Share::ShareType(sharee->type()), sharee->shareWith(), _maxSharingPermissions, {});
-    }
+    _manager->createShare(_sharePath, Share::ShareType(sharee->type()), sharee->shareWith(), _maxSharingPermissions, {});
 }
 
 void ShareModel::createNewUserGroupShareWithPassword(const ShareePtr &sharee, const QString &password) const

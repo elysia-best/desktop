@@ -938,11 +938,6 @@ void SyncEngine::finalize(bool success)
     _syncRunning = false;
     emit finished(success);
 
-    if (_account->shouldSkipE2eeMetadataChecksumValidation()) {
-        qCDebug(lcEngine) << "shouldSkipE2eeMetadataChecksumValidation was set. Sync is finished, so resetting it...";
-        _account->resetShouldSkipE2eeMetadataChecksumValidation();
-    }
-
     // Delete the propagator only after emitting the signal.
     _propagator.clear();
     _seenConflictFiles.clear();

@@ -44,7 +44,7 @@ constexpr auto versionC = "version";
 constexpr auto serverVersionC = "serverVersion";
 constexpr auto serverColorC = "serverColor";
 constexpr auto serverTextColorC = "serverTextColor";
-constexpr auto skipE2eeMetadataChecksumValidationC = "skipE2eeMetadataChecksumValidation";
+
 constexpr auto networkProxyTypeC = "networkProxyType";
 constexpr auto networkProxyHostNameC = "networkProxyHostName";
 constexpr auto networkProxyPortC = "networkProxyPort";
@@ -54,7 +54,7 @@ constexpr auto networkUploadLimitSettingC = "networkUploadLimitSetting";
 constexpr auto networkDownloadLimitSettingC = "networkDownloadLimitSetting";
 constexpr auto networkUploadLimitC = "networkUploadLimit";
 constexpr auto networkDownloadLimitC = "networkDownloadLimit";
-constexpr auto encryptionCertificateSha256FingerprintC = "encryptionCertificateSha256Fingerprint";
+
 #ifdef BUILD_FILE_PROVIDER_MODULE
 constexpr auto fileProviderDomainIdentifierC = "fileProviderDomainIdentifier";
 #endif
@@ -432,15 +432,11 @@ void AccountManager::saveAccountHelper(const AccountPtr &account, QSettings &set
     settings.setValue(QLatin1String(serverTextColorC), account->_serverTextColor);
     settings.setValue(QLatin1String(serverHasValidSubscriptionC), account->serverHasValidSubscription());
     settings.setValue(QLatin1String(serverDesktopEnterpriseUpdateChannelC), account->enterpriseUpdateChannel().toString());
-    settings.setValue(QLatin1String(encryptionCertificateSha256FingerprintC), account->encryptionCertificateFingerprint());
+
 #ifdef BUILD_FILE_PROVIDER_MODULE
     settings.setValue(QLatin1String(fileProviderDomainIdentifierC), account->fileProviderDomainIdentifier());
 #endif
-    if (!account->_skipE2eeMetadataChecksumValidation) {
-        settings.remove(QLatin1String(skipE2eeMetadataChecksumValidationC));
-    } else {
-        settings.setValue(QLatin1String(skipE2eeMetadataChecksumValidationC), account->_skipE2eeMetadataChecksumValidation);
-    }
+
 
     settings.setValue(networkProxyTypeC, account->proxyType());
     settings.setValue(networkProxyHostNameC, account->proxyHostName());
@@ -649,7 +645,7 @@ AccountPtr AccountManager::loadAccountHelper(QSettings &settings)
     acc->_serverHasValidSubscription = settings.value(QLatin1String(serverHasValidSubscriptionC), false).value<bool>();
     acc->_enterpriseUpdateChannel = UpdateChannel::fromString(
         settings.value(QLatin1String(serverDesktopEnterpriseUpdateChannelC), QVariant::fromValue(UpdateChannel::Invalid.toString())).toString());
-    acc->_skipE2eeMetadataChecksumValidation = settings.value(QLatin1String(skipE2eeMetadataChecksumValidationC), {}).toBool();
+
     acc->_davUser = settings.value(QLatin1String(davUserC)).toString();
 #ifdef BUILD_FILE_PROVIDER_MODULE
     acc->setFileProviderDomainIdentifier(settings.value(QLatin1String(fileProviderDomainIdentifierC)).toString());
@@ -710,7 +706,7 @@ AccountPtr AccountManager::loadAccountHelper(QSettings &settings)
     });
     job->start();
 
-    acc->setEncryptionCertificateFingerprint(settings.value(QLatin1String(encryptionCertificateSha256FingerprintC)).toByteArray());
+
 
     // now the server cert, it is in the general group
     settings.beginGroup(QLatin1String(generalC));
@@ -855,8 +851,7 @@ AccountPtr AccountManager::createAccount()
     acc->setSslErrorHandler(new SslDialogErrorHandler);
     connect(acc.data(), &Account::proxyAuthenticationRequired,
         ProxyAuthHandler::instance(), &ProxyAuthHandler::handleProxyAuthenticationRequired);
-    connect(acc.data(), &Account::lockFileError,
-        Systray::instance(), &Systray::showErrorMessageDialog);
+
 
     return acc;
 }

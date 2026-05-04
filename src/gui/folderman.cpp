@@ -1781,32 +1781,6 @@ void FolderMan::leaveShare(const QString &localFile)
     if (const auto folder = FolderMan::instance()->folderForPath(localFileNoTrailingSlash)) {
         const auto filePathRelative = Utility::noLeadingSlashPath(QString(localFileNoTrailingSlash).remove(folder->path()));
 
-        SyncJournalFileRecord rec;
-        if (folder->journalDb()->getFileRecord(filePathRelative, &rec)
-            && rec.isValid() && rec.isE2eEncrypted()) {
-
-            if (_removeE2eeShareJob) {
-                _removeE2eeShareJob->deleteLater();
-            }
-
-            _removeE2eeShareJob = new UpdateE2eeFolderUsersMetadataJob(folder->accountState()->account(),
-                                                                                 folder->journalDb(),
-                                                                                 folder->remotePath(),
-                                                                                 UpdateE2eeFolderUsersMetadataJob::Remove,
-                                                                                 folder->remotePathTrailingSlash() + filePathRelative,
-                                                                                 folder->accountState()->account()->davUser());
-            _removeE2eeShareJob->setParent(this);
-            _removeE2eeShareJob->start(true);
-            connect(_removeE2eeShareJob, &UpdateE2eeFolderUsersMetadataJob::finished, this, [localFileNoTrailingSlash, this](int code, const QString &message) {   
-                if (code != 200) {
-                    qCWarning(lcFolderMan) << "Could not remove share from E2EE folder's metadata!" << code << message;
-                    return;
-                }
-                slotLeaveShare(localFileNoTrailingSlash, _removeE2eeShareJob->folderToken());
-            });
-
-            return;
-        }
         slotLeaveShare(localFileNoTrailingSlash);
     }
 }
@@ -1823,17 +1797,9 @@ void FolderMan::slotLeaveShare(const QString &localFile, const QByteArray &folde
     const auto filePathRelative = QString(localFile).remove(folder->path());
     const auto leaveShareJob = new SimpleApiJob(folder->accountState()->account(), folder->accountState()->account()->davPath() + filePathRelative);
     leaveShareJob->setVerb(SimpleApiJob::Verb::Delete);
-    leaveShareJob->addRawHeader("e2e-token", folderToken);
     connect(leaveShareJob, &SimpleApiJob::resultReceived, this, [this, folder, localFile](int statusCode) {
         qCDebug(lcFolderMan) << "slotLeaveShare callback statusCode" << statusCode;
         Q_UNUSED(statusCode);
-        if (_removeE2eeShareJob) {
-            _removeE2eeShareJob->unlockFolder(EncryptedFolderMetadataHandler::UnlockFolderWithResult::Success);
-            connect(_removeE2eeShareJob.data(), &UpdateE2eeFolderUsersMetadataJob::folderUnlocked, this, [this, folder] {
-                scheduleFolder(folder);
-            });
-            return;
-        }
         scheduleFolder(folder);
     });
     leaveShareJob->start();
@@ -2229,7 +2195,6 @@ void FolderMan::slotSetupPushNotifications(const Folder::Map &folderMap)
         // If we can't connect at this point, the signals will be connected in slotPushNotificationsReady()
         // after the PushNotification object emitted the ready signal
         slotConnectToPushNotifications(account);
-        connect(account.data(), &Account::pushNotificationsReady, this, &FolderMan::slotConnectToPushNotifications, Qt::UniqueConnection);
     }
 }
 
@@ -2270,13 +2235,7 @@ void FolderMan::slotProcessFileIdsPushNotification(Account *account, const QList
 
 void FolderMan::slotConnectToPushNotifications(const AccountPtr &account)
 {
-    const auto pushNotifications = account->pushNotifications();
-
-    if (pushNotificationsFilesReady(account)) {
-        qCInfo(lcFolderMan) << "Push notifications ready";
-        connect(pushNotifications, &PushNotifications::filesChanged, this, &FolderMan::slotProcessFilesPushNotification, Qt::UniqueConnection);
-        connect(pushNotifications, &PushNotifications::fileIdsChanged, this, &FolderMan::slotProcessFileIdsPushNotification, Qt::UniqueConnection);
-    }
+    Q_UNUSED(account)
 }
 
 bool FolderMan::checkVfsAvailability(const QString &path, Vfs::Mode mode) const
