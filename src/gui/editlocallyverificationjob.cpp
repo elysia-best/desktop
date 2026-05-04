@@ -7,6 +7,7 @@
 
 #include <QDir>
 #include <QLoggingCategory>
+#include <QRegularExpression>
 #include <QUrlQuery>
 
 #include "libsync/networkjobs.h"
