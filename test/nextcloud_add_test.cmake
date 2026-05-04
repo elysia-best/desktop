@@ -13,7 +13,7 @@ macro(nextcloud_build_test test_class)
     set_target_properties(${OWNCLOUD_TEST_CLASS}Test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
     target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE
-      Nextcloud::sync
+      OpenList::sync
       testutils
       nextcloudCore
       cmdCore
@@ -51,7 +51,7 @@ macro(nextcloud_add_test test_class)
     set_target_properties(${OWNCLOUD_TEST_CLASS}Test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
     target_link_libraries(${OWNCLOUD_TEST_CLASS}Test PRIVATE
-      Nextcloud::sync
+      OpenList::sync
       testutils
       nextcloudCore
       cmdCore
@@ -101,7 +101,7 @@ macro(nextcloud_add_benchmark test_class)
     set_target_properties(${OWNCLOUD_TEST_CLASS}Bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
     target_link_libraries(${OWNCLOUD_TEST_CLASS}Bench
-      Nextcloud::sync
+      OpenList::sync
       testutils
       nextcloudCore
       cmdCore
