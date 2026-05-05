@@ -200,9 +200,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install inkscape
+      - name: Install WiX Toolset and Inkscape
         shell: pwsh
-        run: choco install inkscape
+        run: |
+          choco install wixtoolset inkscape --no-progress
 
       - name: Setup PATH
         shell: pwsh
@@ -239,7 +240,7 @@ jobs:
         run: |
           $buildDir = "${{ github.workspace }}\${{ env.CRAFT_TARGET }}\build\nextcloud-client\work\build"
           cd $buildDir
-          & cpack -G WIX
+          & cmake --build . --target package --config Release
 
       - name: Find and stage MSI
         shell: pwsh

@@ -39,6 +39,7 @@ endif()
 
 
 if(WIN32)
+    set( CPACK_GENERATOR "WIX" )
     set( CPACK_PACKAGE_FILE_NAME  ${APPLICATION_SHORTNAME}-${CPACK_PACKAGE_VERSION}-setup )
     # Package file name without extension. Also a directory of installer  cmake-2.5.0-Linux-i686
     # CPACK_GENERATOR   CPack generator to be used  STGZ;TGZ;TZ

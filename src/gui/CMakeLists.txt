@@ -678,6 +678,57 @@ install(TARGETS openlist
 
 if (WIN32)
     install(FILES $<TARGET_PDB_FILE:openlist> DESTINATION bin OPTIONAL)
+
+    # Deploy Qt and KF6 DLLs using windeployqt (equivalent to macdeployqt on macOS)
+    if(NOT BUILD_LIBRARIES_ONLY)
+        get_target_property(QT_QMAKE_EXECUTABLE Qt::qmake IMPORTED_LOCATION)
+        get_filename_component(QT_BIN_DIR "${QT_QMAKE_EXECUTABLE}" DIRECTORY)
+        find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
+
+        if(WINDEPLOYQT_EXECUTABLE)
+            # Collect extra library search paths for KF6 and other deps
+            set(_windeployqt_extra_args)
+            foreach(_dep_target IN ITEMS KF6::Archive KF6::GuiAddons Qt6::keychain)
+                if(TARGET ${_dep_target})
+                    get_target_property(_dep_loc ${_dep_target} IMPORTED_LOCATION)
+                    if(_dep_loc)
+                        get_filename_component(_dep_dir "${_dep_loc}" DIRECTORY)
+                        list(APPEND _windeployqt_extra_args --libdir "${_dep_dir}")
+                    endif()
+                endif()
+            endforeach()
+
+            add_custom_command(TARGET openlist POST_BUILD
+                COMMAND "${WINDEPLOYQT_EXECUTABLE}"
+                    --no-translations
+                    --no-compiler-runtime
+                    ${_windeployqt_extra_args}
+                    "$<TARGET_FILE:openlist>"
+                COMMENT "Running windeployqt to deploy Qt and KF6 dependencies..."
+            )
+
+            # Install windeployqt output at install time (files don't exist at configure time)
+            install(CODE "
+                file(GLOB_RECURSE _windeploy_files LIST_DIRECTORIES false
+                    \"${BIN_OUTPUT_DIRECTORY}/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/bearer/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/iconengines/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/imageformats/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/platforms/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/sqldrivers/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/styles/*.dll\"
+                    \"${BIN_OUTPUT_DIRECTORY}/tls/*.dll\"
+                )
+                foreach(_file \${_windeploy_files})
+                    file(RELATIVE_PATH _rel \"${BIN_OUTPUT_DIRECTORY}\" \"\${_file}\")
+                    get_filename_component(_dest_dir \"${CMAKE_INSTALL_BINDIR}/\${_rel}\" DIRECTORY)
+                    file(INSTALL \"\${_file}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/\${_dest_dir}\")
+                endforeach()
+            ")
+        else()
+            message(WARNING "windeployqt not found - Windows package will lack Qt DLLs")
+        endif()
+    endif()
 endif()
 
 # FIXME: The following lines are dup in src/gui and src/cmd because it needs to be done after both are installed
