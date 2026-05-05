@@ -335,4 +335,4 @@ private slots:
 };
 
 QTEST_GUILESS_MAIN(TestNextcloudPropagator)
-#include "testnextcloudpropagator.moc"
+#include "testopenlistpropagator.moc"
