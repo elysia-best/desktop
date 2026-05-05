@@ -8,6 +8,7 @@
 #include "account.h"
 #include "helpers.h"
 #include "owncloudpropagator.h"
+#include "theme.h"
 #include "common/checksums.h"
 
 #include "creds/abstractcredentials.h"
@@ -566,6 +567,7 @@ bool LsColJob::finished()
 namespace {
     const char statusphpC[] = "status.php";
     const char nextcloudDirC[] = "nextcloud/";
+    const char openListCheckPath[] = "api/public/settings";
 }
 
 CheckServerJob::CheckServerJob(AccountPtr account, QObject *parent)
@@ -579,6 +581,11 @@ CheckServerJob::CheckServerJob(AccountPtr account, QObject *parent)
 void CheckServerJob::start()
 {
     _serverUrl = account()->url();
+
+    if (Theme::instance()->forceConfigAuthType() == QLatin1String("openlist")) {
+        setPath(QLatin1String(openListCheckPath));
+    }
+
     sendRequest("GET", Utility::concatUrlPath(_serverUrl, path()));
     connect(reply(), &QNetworkReply::metaDataChanged, this, &CheckServerJob::metaDataChangedSlot);
     connect(reply(), &QNetworkReply::encrypted, this, &CheckServerJob::encryptedSlot);
@@ -664,9 +671,11 @@ bool CheckServerJob::finished()
 
     mergeSslConfigurationForSslButton(reply()->sslConfiguration(), account());
 
+    const bool isOpenList = Theme::instance()->forceConfigAuthType() == QLatin1String("openlist");
+
     // The server installs to /owncloud. Let's try that if the file wasn't found
-    // at the original location
-    if ((reply()->error() == QNetworkReply::ContentNotFoundError) && (!_subdirFallback)) {
+    // at the original location (skip for OpenList which doesn't use status.php)
+    if (!isOpenList && (reply()->error() == QNetworkReply::ContentNotFoundError) && (!_subdirFallback)) {
         _subdirFallback = true;
         setPath(QLatin1String(nextcloudDirC) + QLatin1String(statusphpC));
         start();
@@ -679,6 +688,16 @@ bool CheckServerJob::finished()
     if (body.isEmpty() || httpStatus != 200) {
         qCWarning(lcCheckServerJob) << "error: status.php replied " << httpStatus << body;
         emit instanceNotFound(reply());
+    } else if (isOpenList) {
+        QJsonParseError error{};
+        auto status = QJsonDocument::fromJson(body, &error);
+        if (error.error != QJsonParseError::NoError || status.isNull()) {
+            qCWarning(lcCheckServerJob) << "OpenList public settings is not valid JSON!" << body << reply()->request().url() << error.errorString();
+            emit instanceNotFound(reply());
+        } else {
+            qCInfo(lcCheckServerJob) << "OpenList server found at" << _serverUrl;
+            emit instanceFound(_serverUrl, status.object());
+        }
     } else {
         QJsonParseError error{};
         auto status = QJsonDocument::fromJson(body, &error);

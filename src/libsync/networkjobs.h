@@ -536,7 +536,8 @@ public:
         WebViewFlow,
 #endif // WITH_WEBENGINE
         Basic, // also the catch-all fallback for backwards compatibility reasons
-        LoginFlowV2
+        LoginFlowV2,
+        OpenList // JWT token-based auth via /api/auth/login/hash
     };
     Q_ENUM(AuthType)
 

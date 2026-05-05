@@ -7,6 +7,8 @@
 
 #include "accountstate.h"
 
+#include <QRegularExpression>
+
 class QString;
 
 // Forward declarations for Objective-C types using conditional compilation

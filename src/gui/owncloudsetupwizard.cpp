@@ -24,6 +24,8 @@
 #include "creds/credentialsfactory.h"
 #include "creds/abstractcredentials.h"
 #include "creds/dummycredentials.h"
+#include "creds/openlistcredentials.h"
+#include "wizard/openlistcredspage.h"
 
 #ifdef BUILD_FILE_PROVIDER_MODULE
 #include "gui/macOS/fileprovider.h"
@@ -305,6 +307,8 @@ void OwncloudSetupWizard::slotFoundServer(const QUrl &url, const QJsonObject &in
 
     if (_ocWizard->account()->isPublicShareLink()) {
         _ocWizard->setAuthType(DetermineAuthTypeJob::Basic);
+    } else if (Theme::instance()->forceConfigAuthType() == QLatin1String("openlist")) {
+        _ocWizard->setAuthType(DetermineAuthTypeJob::OpenList);
     } else {
         slotDetermineAuthType();
     }
@@ -356,6 +360,35 @@ void OwncloudSetupWizard::slotConnectToOCUrl(const QString &url)
     AbstractCredentials *creds = _ocWizard->getCredentials();
     if (creds) {
         _ocWizard->account()->setCredentials(creds);
+    }
+
+    // Handle OpenList auth separately: the credentials' askFromUser() makes the API call
+    auto *openListCreds = qobject_cast<OpenListCredentials *>(creds);
+    if (openListCreds) {
+        connect(openListCreds, &OpenListCredentials::asked, this, [this, openListCreds, url]() {
+            if (openListCreds->ready()) {
+                _ocWizard->account()->setDavUser(openListCreds->user());
+                _ocWizard->account()->setDavDisplayName(openListCreds->user());
+                _ocWizard->setField(QLatin1String("OCUrl"), url);
+                _ocWizard->appendToConfigurationLog(tr("Successfully connected to %1 at %2 …")
+                                                        .arg(Theme::instance()->appNameGUI(), url));
+                // Persist and proceed
+                openListCreds->persist();
+                if (auto *page = qobject_cast<OpenListCredsPage *>(_ocWizard->currentPage())) {
+                    page->setConnected();
+                }
+                emit _ocWizard->successfulStep();
+            } else {
+                if (auto *page = qobject_cast<OpenListCredsPage *>(_ocWizard->currentPage())) {
+                    page->setErrorString(tr("Login failed. Please check your username and password."));
+                }
+            }
+        });
+        openListCreds->askFromUser();
+        return;
+    }
+
+    if (creds) {
         creds->persist();
     }
 

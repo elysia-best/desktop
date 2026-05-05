@@ -25,6 +25,7 @@
 #include <QCollator>
 #include <QSysInfo>
 #include <qrandom.h>
+#include <QCryptographicHash>
 
 #ifdef Q_OS_UNIX
 #include <sys/statvfs.h>
@@ -708,6 +709,12 @@ QString Utility::fullRemotePathToRemoteSyncRootRelative(const QString &fullRemot
     const auto relativePathToRemoteSyncRoot = fullRemotePathNoLeadingSlash.mid(remoteSyncRootNoLeadingSlashWithTrailingSlash.size());
     Q_ASSERT(!relativePathToRemoteSyncRoot.isEmpty());
     return noLeadingSlashPath(noTrailingSlashPath(relativePathToRemoteSyncRoot));
+}
+
+QString Utility::sha256Hash(const QString &input)
+{
+    return QString::fromLatin1(QCryptographicHash::hash(
+        input.toUtf8(), QCryptographicHash::Sha256).toHex());
 }
 
 

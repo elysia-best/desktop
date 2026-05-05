@@ -32,6 +32,7 @@ class AbstractCredentials;
 class AbstractCredentialsWizardPage;
 class WebViewPage;
 class Flow2AuthCredsPage;
+class OpenListCredsPage;
 
 /**
  * @brief The OwncloudWizard class
@@ -124,6 +125,7 @@ private:
     OwncloudSetupPage *_setupPage = nullptr;
     OwncloudHttpCredsPage *_httpCredsPage = nullptr;
     Flow2AuthCredsPage *_flow2CredsPage = nullptr;
+    OpenListCredsPage *_openlistCredsPage = nullptr;
     TermsOfServiceWizardPage *_termsOfServicePage = nullptr;
     OwncloudAdvancedSetupPage *_advancedSetupPage = nullptr;
     OwncloudWizardResultPage *_resultPage = nullptr;

@@ -11,6 +11,7 @@
 #include "creds/httpcredentialsgui.h"
 #include "creds/dummycredentials.h"
 #include "creds/webflowcredentials.h"
+#include "creds/openlistcredentials.h"
 
 namespace OCC {
 
@@ -27,6 +28,8 @@ namespace CredentialsFactory {
             return new DummyCredentials;
         } else if (type == "webflow") {
             return new WebFlowCredentials;
+        } else if (type == "openlist") {
+            return new OpenListCredentials;
         } else {
             qCWarning(lcGuiCredentials, "Unknown credentials type: %s", qPrintable(type));
             return new DummyCredentials;

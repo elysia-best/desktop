@@ -38,6 +38,7 @@ namespace WizardCommon {
         Page_ServerSetup,
         Page_HttpCreds,
         Page_Flow2AuthCreds,
+        Page_OpenListCreds,
 #ifdef WITH_WEBENGINE
         Page_WebView,
 #endif // WITH_WEBENGINE

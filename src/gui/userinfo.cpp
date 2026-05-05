@@ -89,7 +89,13 @@ void UserInfo::slotFetchInfo()
     }
 
     AccountPtr account = _accountState->account();
-    _job = new JsonApiJob(account, QLatin1String("ocs/v1.php/cloud/user"), this);
+
+    const bool isOpenList = account->credentials()
+        && account->credentials()->authType() == QLatin1String("openlist");
+
+    _job = new JsonApiJob(account,
+        isOpenList ? QLatin1String("api/me") : QLatin1String("ocs/v1.php/cloud/user"),
+        this);
     _job->setTimeout(20 * 1000);
     connect(_job.data(), &JsonApiJob::jsonReceived, this, &UserInfo::slotUpdateLastInfo);
     connect(_job.data(), &AbstractNetworkJob::networkError, this, &UserInfo::slotRequestFailed);
@@ -98,12 +104,32 @@ void UserInfo::slotFetchInfo()
 
 void UserInfo::slotUpdateLastInfo(const QJsonDocument &json)
 {
-    auto objData = json.object().value("ocs"_L1).toObject().value("data"_L1).toObject();
-
     AccountPtr account = _accountState->account();
 
-    if (const auto newUserId = objData.value("id"_L1).toString(); !newUserId.isEmpty()) {
-        if (QString::compare(account->davUser(), newUserId, Qt::CaseInsensitive) != 0) {
+    const bool isOpenList = account->credentials()
+        && account->credentials()->authType() == QLatin1String("openlist");
+
+    QString userId;
+    QString displayName;
+    QJsonObject objData;
+
+    if (isOpenList) {
+        // OpenList response: { code, message, data: { id, username, ... } }
+        objData = json.object().value("data"_L1).toObject();
+        userId = objData.value("username"_L1).toString();
+        displayName = objData.value("nickname"_L1).toString();
+        if (displayName.isEmpty()) {
+            displayName = userId;
+        }
+    } else {
+        // Nextcloud response: { ocs: { data: { id, display-name, quota, ... } } }
+        objData = json.object().value("ocs"_L1).toObject().value("data"_L1).toObject();
+        userId = objData.value("id"_L1).toString();
+        displayName = objData.value("display-name"_L1).toString();
+    }
+
+    if (!userId.isEmpty()) {
+        if (QString::compare(account->davUser(), userId, Qt::CaseInsensitive) != 0) {
             // TODO: the error message should be in the UI
             qInfo() << "Authenticated with the wrong user! Please login with the account:" << account->prettyName();
             if (account->credentials()) {
@@ -111,28 +137,29 @@ void UserInfo::slotUpdateLastInfo(const QJsonDocument &json)
             }
             return;
         }
-        account->setDavUser(newUserId);
+        account->setDavUser(userId);
     }
 
-    QString displayName = objData.value("display-name"_L1).toString();
     if (!displayName.isEmpty()) {
         account->setDavDisplayName(displayName);
     }
 
-    auto objQuota = objData.value("quota"_L1).toObject();
-    qint64 used = objQuota.value("used"_L1).toDouble();
-    qint64 total = objQuota.value("quota"_L1).toDouble();
+    if (!isOpenList) {
+        auto objQuota = objData.value("quota"_L1).toObject();
+        qint64 used = objQuota.value("used"_L1).toDouble();
+        qint64 total = objQuota.value("quota"_L1).toDouble();
 
-    if(_lastInfoReceived.isNull() || _lastQuotaUsedBytes != used || _lastQuotaTotalBytes != total) {
-        _lastQuotaUsedBytes = used;
-        _lastQuotaTotalBytes = total;
-        emit quotaUpdated(_lastQuotaTotalBytes, _lastQuotaUsedBytes);
+        if(_lastInfoReceived.isNull() || _lastQuotaUsedBytes != used || _lastQuotaTotalBytes != total) {
+            _lastQuotaUsedBytes = used;
+            _lastQuotaTotalBytes = total;
+            emit quotaUpdated(_lastQuotaTotalBytes, _lastQuotaUsedBytes);
+        }
     }
 
     _jobRestartTimer.start(defaultIntervalT);
     _lastInfoReceived = QDateTime::currentDateTime();
 
-    if(_fetchAvatarImage && !account->isPublicShareLink()) {
+    if(_fetchAvatarImage && !account->isPublicShareLink() && !isOpenList) {
         auto *job = new AvatarJob(account, account->davUser(), 128, this);
         job->setTimeout(20 * 1000);
         QObject::connect(job, &AvatarJob::avatarPixmap, this, &UserInfo::slotAvatarImage);

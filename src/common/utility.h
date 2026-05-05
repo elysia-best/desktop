@@ -343,6 +343,9 @@ namespace Utility {
     OCSYNC_EXPORT QString noTrailingSlashPath(const QString &path);
     OCSYNC_EXPORT QString fullRemotePathToRemoteSyncRootRelative(const QString &fullRemotePath, const QString &remoteSyncRoot);
 
+    /** Returns lowercase hex-encoded SHA256 hash of the given input string. */
+    OCSYNC_EXPORT QString sha256Hash(const QString &input);
+
 #ifdef Q_OS_WIN
     OCSYNC_EXPORT bool registryKeyExists(HKEY hRootKey, const QString &subKey);
     OCSYNC_EXPORT QVariant registryGetKeyValue(HKEY hRootKey, const QString &subKey, const QString &valueName);

@@ -27,8 +27,9 @@ namespace OCC {
  * Authentication flow:
  *  1. fetchFromKeychain() – loads the previously persisted JWT token from the
  *     system keychain and emits fetched() when done.
- *  2. askFromUser()       – prompts the user for username + password, POSTs to
- *     POST /api/auth/login, stores the returned JWT token, and emits asked().
+ *  2. askFromUser()       – hashes _password with SHA256, POSTs to
+ *     POST /api/auth/login/hash, stores the returned JWT token, and emits asked().
+ *     If _password is empty (e.g. re-auth), emits asked() and lets the GUI handle it.
  *  3. persist()           – writes the JWT token to the system keychain.
  *  4. forgetSensitiveData() – removes the token from the keychain and clears
  *     the in-memory copy.
@@ -63,18 +64,26 @@ public:
 
     void setAccount(Account *account) override;
 
-    /** The JWT token returned by /api/auth/login. */
+    /** The JWT token returned by /api/auth/login/hash. */
     [[nodiscard]] QString token() const { return _token; }
     void setToken(const QString &token);
+
+    /** Set credentials before calling askFromUser(). */
+    void setUser(const QString &user) { _user = user; }
+    void setPassword(const QString &password) { _password = password; }
+    void setOtpCode(const QString &otpCode) { _otpCode = otpCode; }
 
 private Q_SLOTS:
     void slotReadJobDone(QKeychain::Job *job);
     void slotWriteJobDone(QKeychain::Job *job);
+    void slotLoginReplyFinished();
 
 private:
     QString keychainKey() const;
 
     QString _user;
+    QString _password;
+    QString _otpCode;
     QString _token;
     bool _ready = false;
 };

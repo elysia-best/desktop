@@ -215,6 +215,8 @@ set(client_SRCS
     wizard/owncloudhttpcredspage.cpp
     wizard/flow2authcredspage.h
     wizard/flow2authcredspage.cpp
+    wizard/openlistcredspage.h
+    wizard/openlistcredspage.cpp
     wizard/flow2authwidget.h
     wizard/flow2authwidget.cpp
     wizard/owncloudsetuppage.h

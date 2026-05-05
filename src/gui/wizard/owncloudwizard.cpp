@@ -22,6 +22,7 @@
 #include "wizard/owncloudadvancedsetuppage.h"
 #include "wizard/webviewpage.h"
 #include "wizard/flow2authcredspage.h"
+#include "wizard/openlistcredspage.h"
 
 #include "common/vfs.h"
 
@@ -49,6 +50,7 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     , _setupPage(new OwncloudSetupPage(this))
     , _httpCredsPage(new OwncloudHttpCredsPage(this))
     , _flow2CredsPage(new Flow2AuthCredsPage)
+    , _openlistCredsPage(new OpenListCredsPage(this))
     , _termsOfServicePage(new TermsOfServiceWizardPage)
     , _advancedSetupPage(new OwncloudAdvancedSetupPage(this))
 #ifdef WITH_WEBENGINE
@@ -68,6 +70,7 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     setPage(WizardCommon::Page_ServerSetup, _setupPage);
     setPage(WizardCommon::Page_HttpCreds, _httpCredsPage);
     setPage(WizardCommon::Page_Flow2AuthCreds, _flow2CredsPage);
+    setPage(WizardCommon::Page_OpenListCreds, _openlistCredsPage);
     setPage(WizardCommon::Page_TermsOfService, _termsOfServicePage);
     setPage(WizardCommon::Page_AdvancedSetup, _advancedSetupPage);
 #ifdef WITH_WEBENGINE
@@ -85,6 +88,7 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     connect(_setupPage, &OwncloudSetupPage::determineAuthType, this, &OwncloudWizard::determineAuthType);
     connect(_httpCredsPage, &OwncloudHttpCredsPage::connectToOCUrl, this, &OwncloudWizard::connectToOCUrl);
     connect(_flow2CredsPage, &Flow2AuthCredsPage::connectToOCUrl, this, &OwncloudWizard::connectToOCUrl);
+    connect(_openlistCredsPage, &OpenListCredsPage::connectToOCUrl, this, &OwncloudWizard::connectToOCUrl);
 #ifdef WITH_WEBENGINE
     if (!useFlow2()) {
         connect(_webViewPage, &WebViewPage::connectToOCUrl, this, &OwncloudWizard::connectToOCUrl);
@@ -118,6 +122,7 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     connect(this, &OwncloudWizard::styleChanged, _setupPage, &OwncloudSetupPage::slotStyleChanged);
     connect(this, &OwncloudWizard::styleChanged, _advancedSetupPage, &OwncloudAdvancedSetupPage::slotStyleChanged);
     connect(this, &OwncloudWizard::styleChanged, _flow2CredsPage, &Flow2AuthCredsPage::slotStyleChanged);
+    connect(this, &OwncloudWizard::styleChanged, _openlistCredsPage, &OpenListCredsPage::slotStyleChanged);
     connect(this, &OwncloudWizard::styleChanged, _termsOfServicePage, &TermsOfServiceWizardPage::styleChanged);
 
     customizeStyle();
@@ -276,6 +281,10 @@ void OwncloudWizard::successfulStep()
         _flow2CredsPage->setConnected();
         break;
 
+    case WizardCommon::Page_OpenListCreds:
+        _openlistCredsPage->setConnected();
+        break;
+
 #ifdef WITH_WEBENGINE
     case WizardCommon::Page_WebView:
         if (!this->useFlow2()) {
@@ -334,6 +343,8 @@ void OwncloudWizard::setAuthType(DetermineAuthTypeJob::AuthType type)
             _credentialsPage = _webViewPage;
         }
 #endif // WITH_WEBENGINE
+    } else if (type == DetermineAuthTypeJob::OpenList) {
+        _credentialsPage = _openlistCredsPage;
     } else { // try Basic auth even for "Unknown"
         _credentialsPage = _httpCredsPage;
     }
@@ -362,6 +373,7 @@ void OwncloudWizard::slotCurrentPageChanged(int id)
         id == WizardCommon::Page_WebView ||
 #endif // WITH_WEBENGINE
         id == WizardCommon::Page_Flow2AuthCreds ||
+        id == WizardCommon::Page_OpenListCreds ||
         id == WizardCommon::Page_TermsOfService) {
         setButtonLayout({QWizard::BackButton, QWizard::Stretch});
     } else if (id == WizardCommon::Page_AdvancedSetup) {

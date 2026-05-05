@@ -8,6 +8,7 @@
 #include "account.h"
 #include "accessmanager.h"
 #include "theme.h"
+#include "common/utility.h"
 
 #include <QLoggingCategory>
 #include <QNetworkReply>
@@ -87,8 +88,7 @@ QString OpenListCredentials::user() const
 
 QString OpenListCredentials::password() const
 {
-    // The "password" abstraction here is the JWT token itself.
-    return _token;
+    return _password;
 }
 
 void OpenListCredentials::setToken(const QString &token)
@@ -139,9 +139,82 @@ void OpenListCredentials::slotReadJobDone(QKeychain::Job *incomingJob)
 
 void OpenListCredentials::askFromUser()
 {
-    // GUI interaction is handled in the wizard/credential GUI layer.
-    // Here we just signal completion; the GUI sets the token via setToken()
-    // before calling persist().
+    if (!_account) {
+        qCWarning(lcOpenListCredentials) << "No account set, cannot login.";
+        emit asked();
+        return;
+    }
+
+    if (_password.isEmpty()) {
+        qCWarning(lcOpenListCredentials) << "No password set, cannot perform login.";
+        emit asked();
+        return;
+    }
+
+    // Build the JSON request body
+    QJsonObject body;
+    body.insert(QStringLiteral("username"), _user);
+    body.insert(QStringLiteral("password"), Utility::sha256Hash(_password));
+    if (!_otpCode.isEmpty()) {
+        body.insert(QStringLiteral("otp_code"), _otpCode);
+    }
+
+    QNetworkRequest req;
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    req.setAttribute(AbstractCredentials::DontAddCredentialsAttribute, true);
+
+    const auto loginUrl = Utility::concatUrlPath(_account->url().toString(), QStringLiteral("/api/auth/login/hash"));
+    qCInfo(lcOpenListCredentials) << "Logging in at" << loginUrl << "for user" << _user;
+
+    auto *reply = _account->sendRawRequest("POST", loginUrl, req, QJsonDocument(body).toJson(QJsonDocument::Compact));
+    connect(reply, &QNetworkReply::finished, this, &OpenListCredentials::slotLoginReplyFinished);
+}
+
+void OpenListCredentials::slotLoginReplyFinished()
+{
+    auto *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) {
+        qCWarning(lcOpenListCredentials) << "slotLoginReplyFinished called without a valid reply";
+        _ready = false;
+        emit asked();
+        return;
+    }
+    reply->deleteLater();
+
+    const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const auto responseData = reply->readAll();
+
+    if (httpStatus == 200) {
+        const auto json = QJsonDocument::fromJson(responseData);
+        const auto data = json.object().value(QStringLiteral("data")).toObject();
+        const auto token = data.value(QStringLiteral("token")).toString();
+
+        if (!token.isEmpty()) {
+            qCInfo(lcOpenListCredentials) << "Login successful for user" << _user;
+            _token = token;
+            _ready = true;
+            _otpCode.clear(); // one-time use
+            persist();
+            emit asked();
+            return;
+        }
+    }
+
+    // Try to extract error message from response
+    QString errorMsg;
+    const auto json = QJsonDocument::fromJson(responseData);
+    const auto message = json.object().value(QStringLiteral("message")).toString();
+    if (!message.isEmpty()) {
+        errorMsg = message;
+    } else if (!json.object().value(QStringLiteral("error")).toString().isEmpty()) {
+        errorMsg = json.object().value(QStringLiteral("error")).toString();
+    } else {
+        errorMsg = reply->errorString();
+    }
+
+    qCWarning(lcOpenListCredentials) << "Login failed for user" << _user << "- HTTP" << httpStatus << errorMsg;
+    _ready = false;
+    _token.clear();
     emit asked();
 }
 
@@ -188,6 +261,8 @@ void OpenListCredentials::slotWriteJobDone(QKeychain::Job *incomingJob)
 void OpenListCredentials::invalidateToken()
 {
     _token.clear();
+    _password.clear();
+    _otpCode.clear();
     _ready = false;
 }
 
