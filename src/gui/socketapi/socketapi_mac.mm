@@ -6,6 +6,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QUrl>
 
+#include "config.h"
 #include "application.h"
 
 namespace OCC
